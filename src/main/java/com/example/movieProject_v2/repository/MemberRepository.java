@@ -16,4 +16,8 @@ public interface MemberRepository extends JpaRepository<Member, Integer> {
 
     // 로그인
     Member findByIdAndPass(String id, String pass);
+
+    // 아이디로 회원 찾기 (로그인용)
+    @Query("SELECT m FROM Member m WHERE m.id = :userId")
+    Member findById2(@Param("userId") String userId);
 }

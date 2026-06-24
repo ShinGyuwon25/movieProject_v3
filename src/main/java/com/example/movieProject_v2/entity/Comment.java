@@ -28,4 +28,7 @@ public class Comment {
     private String content;
 
     private Timestamp time;
+
+    @Column
+    private Integer memberSeq;
 }

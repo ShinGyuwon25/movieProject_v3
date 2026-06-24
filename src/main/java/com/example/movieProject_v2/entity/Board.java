@@ -48,4 +48,7 @@ public class Board {
 
     @Column(length = 30)
     private String mcountry;
+
+    @Column
+    private Integer memberSeq;
 }

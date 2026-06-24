@@ -5,25 +5,21 @@
 <html>
 <head>
     <meta charset="UTF-8">
+    <script>
+        function checkFileType(input) {
+            var allowedExt = ['jpg', 'jpeg', 'png', 'gif'];
+            var fileName = input.files[0].name;
+            var ext = fileName.substring(fileName.lastIndexOf('.') + 1).toLowerCase();
+
+            if (!allowedExt.includes(ext)) {
+                alert('이미지 파일만 업로드 가능합니다 (jpg, jpeg, png, gif)');
+                input.value = '';
+            }
+        }
+    </script>
     <title>글 쓰기</title>
     <link rel="stylesheet" href="resources/css/bootstrap.min.css">
     <link rel="stylesheet" href="resources/css/star.css"/>
-<!--     <script>
-        // 사진 미리보기
-        function previewImage(input, previewId) {
-            var preview = document.getElementById(previewId);
-            var file = input.files[0];
-            var reader = new FileReader();
-
-            reader.onload = function (e) {
-                preview.src = e.target.result;
-            };
-
-            if (file) {
-                reader.readAsDataURL(file);
-            }
-        }
-    </script> -->
     <style>
              body {
             background-color: #E6E6E6;
@@ -194,7 +190,7 @@
     <div class="row mb-3">
     <label for="uploadFile" class="col-sm-2 col-form-label no-star-effect" style="font-size: 17px; margin-right: -90px; margin-top: -2px;">영화 포스터</label>
     <div class="col-sm-3">
-        <input type="file" name="uploadFile" onchange="previewImage(this, 'posterPreview');" class="form-control-file">
+        <input type="file" name="uploadFile" onchange="checkFileType(this)" class="form-control-file">
         <!-- <img id="posterPreview" src="#" alt="포스터 미리보기" style="max-width: 100%; max-height: 100%;"> -->
     </div>
 
