@@ -31,4 +31,8 @@ public class Comment {
 
     @Column
     private Integer memberSeq;
+
+    @Column
+    private Integer parentSeq;
+
 }

@@ -28,14 +28,14 @@ public class MemberService {
     public String register(Member mdo, String confirmPass, String address, String domain) {
         mdo.setEmail(address + domain);
 
-        if (memberRepository.existsByUserId(mdo.getId())) return "중복된 아이디입니다.";
-        if (memberRepository.existsByName(mdo.getName())) return "중복된 이름입니다.";
-        if (!mdo.getPass().equals(confirmPass)) return "비밀번호가 일치하지 않습니다.";
-        if (mdo.getId().length() < 5) return "아이디는 5자 이상이어야 합니다.";
-        if (!mdo.getId().matches(".*[a-zA-Z].*")) return "아이디는 영어를 포함해야 합니다.";
-        if (mdo.getName().length() < 2) return "이름은 2자 이상이어야 합니다.";
+        if (memberRepository.existsByUserId(mdo.getId())) return "id:중복된 아이디입니다.";
+        if (memberRepository.existsByName(mdo.getName())) return "name:중복된 이름입니다.";
+        if (!mdo.getPass().equals(confirmPass)) return "pass:비밀번호가 일치하지 않습니다.";
+        if (mdo.getId().length() < 5) return "id:아이디는 5자 이상이어야 합니다.";
+        if (!mdo.getId().matches(".*[a-zA-Z].*")) return "id:아이디는 영어를 포함해야 합니다.";
+        if (mdo.getName().length() < 2) return "name:이름은 2자 이상이어야 합니다.";
         if (mdo.getPass().length() < 6 || !mdo.getPass().matches(".*[a-zA-Z].*") || !mdo.getPass().matches(".*\\d.*"))
-            return "비밀번호는 6자 이상이며, 영어와 숫자를 포함해야 합니다.";
+            return "pass:비밀번호는 6자 이상이며, 영어와 숫자를 포함해야 합니다.";
 
         mdo.setPass(passwordEncoder.encode(mdo.getPass()));
         memberRepository.save(mdo);
@@ -55,6 +55,11 @@ public class MemberService {
 
         try {
             Member existing = memberRepository.findById(mdo.getSeq()).orElseThrow();
+
+            if (!existing.getName().equals(mdo.getName()) && memberRepository.existsByName(mdo.getName())) {
+                return "중복된 이름입니다.";
+            }
+
             existing.setName(mdo.getName());
             existing.setPass(passwordEncoder.encode(mdo.getPass()));
             existing.setEmail(mdo.getEmail());
@@ -66,5 +71,9 @@ public class MemberService {
         }
     }
 
+    // 회원 탈퇴
+    public void deleteMember(Integer seq) {
+        memberRepository.deleteById(seq);
+    }
 
 }

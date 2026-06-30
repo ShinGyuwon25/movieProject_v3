@@ -67,13 +67,13 @@
             <a href="boardList.do" style="text-decoration: none; color: #F2F2F2;">
                  <h3 style="margin-left: 30px; margin-top: 8px;" onclick="location.href='boardList.do'">영화 게시판 🎬</h3>
             </a>
-             <!-- 로그아웃, 회원정보, 게시물 링크 표시 -->
+             <!-- 로그아웃, 마이페이지, 게시물 링크 표시 -->
             <div class="d-flex">
                 <!-- 로그인 상태에 따라 링크 표시 -->
                 <c:choose>
                     <c:when test="${not empty sessionScope.log}">
-                        <a href="logout.do" class="nav-link">로그아웃</a>
-                        <a href="memberView.do" class="nav-link">회원정보</a>
+                        <a href="logout.do" class="nav-link" onclick="return confirm('로그아웃 하시겠습니까?')">로그아웃</a>
+                        <a href="myPage.do" class="nav-link">마이페이지</a>
                         <a href="insertBoard.do" class="nav-link" style="margin-right: 30px;">게시물 작성</a>
                     </c:when>
                     <c:otherwise>

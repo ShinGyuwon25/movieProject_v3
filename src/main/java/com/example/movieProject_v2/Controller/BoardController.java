@@ -13,7 +13,9 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
+
 
 import java.util.List;
 
@@ -25,21 +27,32 @@ public class BoardController {
 
     // 1. boardList
     @RequestMapping(value = "/boardList.do")
-    public String boardList(@RequestParam(defaultValue = "1") int page, Model model) {
-        Page<Board> boardPage = boardService.getBoardList(page);
+    public String boardList(@RequestParam(defaultValue = "1") int page,
+                            @RequestParam(defaultValue = "latest") String sort,
+                            Model model) {
+        Page<Board> boardPage = boardService.getBoardListSorted(page, sort);
         model.addAttribute("bList", boardPage.getContent());
         model.addAttribute("currentPage", page);
         model.addAttribute("totalPages", boardPage.getTotalPages());
+        model.addAttribute("currentSort", sort);
         return "boardList";
     }
 
     // 2. boardView
     @RequestMapping(value = "/boardView.do")
-    public String boardView(@RequestParam Integer seq, Model model) {
+    public String boardView(@RequestParam Integer seq, Model model, HttpSession session) {
         Board myboard = boardService.getBoardView(seq);
         List<Comment> cList = boardService.getCommentList(seq);
         model.addAttribute("myboard", myboard);
         model.addAttribute("cList", cList);
+        model.addAttribute("authorName", myboard.getName());
+        model.addAttribute("likeCount", boardService.getLikeCount(seq));
+
+        Member log = (Member) session.getAttribute("log"); // ← 추가
+        if (log != null) {
+            model.addAttribute("isLiked", boardService.isLiked(seq, log.getSeq())); // ← 추가
+        }
+
         return "boardView";
     }
 
@@ -106,14 +119,40 @@ public class BoardController {
     @RequestMapping(value = "/searchBoard.do")
     public String searchBoard(@RequestParam String searchCon,
                               @RequestParam String searchKey, Model model) {
-        if (!searchCon.equals("title") && !searchCon.equals("content")) {
-            return "redirect:boardList.do";
+        List<Board> sList;
+
+        if (searchCon.equals("genre")) {
+            sList = boardService.filterByGenre(searchKey);
+        } else if (searchCon.equals("country")) {
+            sList = boardService.filterByCountry(searchKey);
+        } else if (searchCon.equals("title")) {
+            sList = boardService.searchBoard("title", searchKey);
+        } else {
+            sList = boardService.searchBoard("content", searchKey);
         }
-        List<Board> sList = boardService.searchBoard(searchCon, searchKey);
+
         if (sList.isEmpty()) {
             model.addAttribute("searchMessage", "검색 결과가 없습니다.");
         } else {
             model.addAttribute("bList", sList);
+        }
+        return "boardList";
+    }
+
+    // + 장르/국가 필터링
+    @RequestMapping(value = "/filterBoard.do")
+    public String filterBoard(@RequestParam String filterType,
+                              @RequestParam String filterValue, Model model) {
+        List<Board> fList;
+        if (filterType.equals("genre")) {
+            fList = boardService.filterByGenre(filterValue);
+        } else {
+            fList = boardService.filterByCountry(filterValue);
+        }
+        if (fList.isEmpty()) {
+            model.addAttribute("searchMessage", "검색 결과가 없습니다.");
+        } else {
+            model.addAttribute("bList", fList);
         }
         return "boardList";
     }
@@ -157,5 +196,17 @@ public class BoardController {
         Integer boardSeq = mycomment.getBoardSeq();
         boardService.deleteComment(seq);
         return "redirect:/boardView.do?seq=" + boardSeq;
+    }
+
+    // + like (좋아요)
+    @RequestMapping(value = "/toggleLike.do")
+    @ResponseBody
+    public String toggleLike(@RequestParam Integer seq, HttpSession session) {
+        Member log = (Member) session.getAttribute("log");
+        if (log == null) return "error";
+
+        boolean liked = boardService.toggleLike(seq, log.getSeq());
+        int count = boardService.getLikeCount(seq);
+        return liked + ":" + count; // 예: "true:5"
     }
 }

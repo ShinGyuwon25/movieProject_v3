@@ -4,18 +4,22 @@ import com.example.movieProject_v2.entity.Board;
 import com.example.movieProject_v2.entity.Comment;
 import com.example.movieProject_v2.repository.BoardRepository;
 import com.example.movieProject_v2.repository.CommentRepository;
+import com.example.movieProject_v2.repository.LikeRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import com.example.movieProject_v2.entity.Like;
+import com.example.movieProject_v2.repository.LikeRepository;
 
 import java.io.File;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.UUID;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -24,6 +28,7 @@ public class BoardService {
 
     private final BoardRepository boardRepository;
     private final CommentRepository commentRepository;
+    private final LikeRepository likeRepository;
 
     // 게시글 목록 (페이징)
     public Page<Board> getBoardList(int page) {
@@ -86,6 +91,31 @@ public class BoardService {
         } else {
             return boardRepository.findByContentContainingOrderBySeqDesc(searchKey);
         }
+    }
+
+    // 정렬된 게시글 목록
+    public Page<Board> getBoardListSorted(int page, String sort) {
+        int pageSize = 10;
+        Pageable pageable = PageRequest.of(page - 1, pageSize);
+        if (sort.equals("views")) {
+            return boardRepository.findAllByOrderByViewsDesc(pageable);
+        } else if (sort.equals("score")) {
+            return boardRepository.findAllByOrderByScoreDesc(pageable);
+        } else {
+            return boardRepository.findAll(
+                    PageRequest.of(page - 1, pageSize, Sort.by(Sort.Direction.DESC, "seq"))
+            );
+        }
+    }
+
+    // 장르 필터링
+    public List<Board> filterByGenre(String mgenre) {
+        return boardRepository.findByMgenreOrderBySeqDesc(mgenre);
+    }
+
+    // 국가 필터링
+    public List<Board> filterByCountry(String mcountry) {
+        return boardRepository.findByMcountryOrderBySeqDesc(mcountry);
     }
 
     // 댓글 목록
@@ -151,5 +181,41 @@ public class BoardService {
             log.error("파일 저장 실패", e);
             return "empty.jpg";
         }
+    }
+
+    // 내가 쓴 글 목록
+    public List<Board> getMyBoards(String name) {
+        return boardRepository.findByNameOrderBySeqDesc(name);
+    }
+
+    // 내가 쓴 댓글 목록
+    public List<Comment> getMyComments(String name) {
+        return commentRepository.findByNameOrderBySeqDesc(name);
+    }
+
+    // 좋아요
+    @Transactional
+    public boolean toggleLike(Integer boardSeq, Integer memberSeq) {
+        Optional<Like> existing = likeRepository.findByBoardSeqAndMemberSeq(boardSeq, memberSeq);
+        if (existing.isPresent()) {
+            likeRepository.delete(existing.get());
+            return false; // 좋아요 취소
+        } else {
+            Like like = new Like();
+            like.setBoardSeq(boardSeq);
+            like.setMemberSeq(memberSeq);
+            likeRepository.save(like);
+            return true; // 좋아요 추가
+        }
+    }
+
+    // 좋아요 개수
+    public int getLikeCount(Integer boardSeq) {
+        return likeRepository.countByBoardSeq(boardSeq);
+    }
+
+    // 내가 좋아요 눌렀는지 확인
+    public boolean isLiked(Integer boardSeq, Integer memberSeq) {
+        return likeRepository.findByBoardSeqAndMemberSeq(boardSeq, memberSeq).isPresent();
     }
 }

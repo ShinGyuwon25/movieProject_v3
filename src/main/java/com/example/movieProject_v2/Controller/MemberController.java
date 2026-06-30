@@ -1,7 +1,9 @@
 package com.example.movieProject_v2.Controller;
 
 import com.example.movieProject_v2.entity.Member;
+import com.example.movieProject_v2.service.BoardService;
 import com.example.movieProject_v2.service.MemberService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -15,6 +17,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 public class MemberController {
 
     private final MemberService memberService;
+    private final BoardService boardService;
+
 
     // 로그인 폼
     @RequestMapping(value = "/login.do", method = RequestMethod.GET)
@@ -31,6 +35,7 @@ public class MemberController {
             return "redirect:/boardList.do";
         } else {
             model.addAttribute("loginError", "아이디 또는 비밀번호가 올바르지 않습니다.");
+            model.addAttribute("savedId", mdo.getId());
             return "login";
         }
     }
@@ -54,22 +59,20 @@ public class MemberController {
                                    @RequestParam String confirmPass,
                                    @RequestParam String address,
                                    @RequestParam String domain,
-                                   Model model) {
+                                   Model model,
+                                   HttpServletRequest request) {
         String error = memberService.register(mdo, confirmPass, address, domain);
         if (error != null) {
-            model.addAttribute("error", error);
+            String[] errorParts = error.split(":", 2);
+            model.addAttribute("errorField", errorParts[0]);
+            model.addAttribute("errorMsg", errorParts[1]);
+            model.addAttribute("savedId", mdo.getId());
+            model.addAttribute("savedName", mdo.getName());
+            model.addAttribute("savedAddress", request.getParameter("address"));
+            model.addAttribute("savedDomain", request.getParameter("domain"));
             return "register";
         }
         return "redirect:login.do";
-    }
-
-    // 회원정보 보기
-    @RequestMapping(value = "/memberView.do")
-    public String memberView(Model model, HttpSession session) {
-        Member log = (Member) session.getAttribute("log");
-        if (log == null) return "errorPage";
-        model.addAttribute("mymember", memberService.getMember(log.getSeq()));
-        return "memberView";
     }
 
     // 회원정보 수정 폼
@@ -86,14 +89,39 @@ public class MemberController {
     public String modifyProcMember(Member mdo, HttpSession session, Model model,
                                    @RequestParam String confirmPass,
                                    @RequestParam String address,
-                                   @RequestParam String domain) {
+                                   @RequestParam String domain,
+                                   @RequestParam Integer seq) {
+        mdo.setSeq(seq);
         String error = memberService.updateMember(mdo, confirmPass, address, domain);
         if (error != null) {
             model.addAttribute("error", error);
-            return "redirect:/modifyMember.do";
+            model.addAttribute("savedName", mdo.getName());
+            model.addAttribute("mymember", memberService.getMember(mdo.getSeq()));
+            return "modifyMember";
         }
         Member updated = memberService.getMember(mdo.getSeq());
         session.setAttribute("log", updated);
-        return "redirect:/memberView.do";
+        return "redirect:/myPage.do";
+    }
+
+    // 마이페이지
+    @RequestMapping(value = "/myPage.do")
+    public String myPage(Model model, HttpSession session) {
+        Member log = (Member) session.getAttribute("log");
+        if (log == null) return "errorPage";
+        model.addAttribute("mymember", memberService.getMember(log.getSeq()));
+        model.addAttribute("myBoards", boardService.getMyBoards(log.getName()));
+        model.addAttribute("myComments", boardService.getMyComments(log.getName()));
+        return "myPage";
+    }
+
+    // 회원 탈퇴
+    @RequestMapping(value = "/deleteMember.do")
+    public String deleteMember(HttpSession session) {
+        Member log = (Member) session.getAttribute("log");
+        if (log == null) return "errorPage";
+        memberService.deleteMember(log.getSeq());
+        session.invalidate();
+        return "redirect:/boardList.do";
     }
 }

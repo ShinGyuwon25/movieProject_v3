@@ -5,6 +5,22 @@
 <html>
 <head>
     <meta charset="UTF-8">
+    <script>
+        function togglePassword(inputId, icon) {
+            var input = document.getElementById(inputId);
+            var confirmInput = document.getElementById('confirmPass');
+            if (input.type === 'password') {
+                input.type = 'text';
+                confirmInput.type = 'text';
+                icon.textContent = '숨기기';
+            } else {
+                input.type = 'password';
+                confirmInput.type = 'password';
+                icon.textContent = '보기';
+            }
+        }
+    </script>
+
     <title>회원정보 수정</title>
     <link rel="stylesheet" href="resources/css/bootstrap.min.css">
     <style>
@@ -71,18 +87,23 @@
 
                 <div class="mb-3">
                     <label for="name" class="form-label visually-hidden">이름</label>
-                    <input type="text" name="name" class="form-control" placeholder="이름" value="${mymember.name}">
+                <input type="text" name="name" class="form-control" placeholder="이름"
+                       value="${not empty savedName ? savedName : mymember.name}">
                 </div>
 
                 <div class="mb-3">
-                    <label for="pass" class="form-label visually-hidden">비밀번호</label>
-                    <input type="password" name="pass" class="form-control" placeholder="비밀번호">
+                  <label for="pass" class="form-label visually-hidden">비밀번호</label>
+                  <div style="position: relative;">
+                    <input type="password" id="pass" name="pass" class="form-control" placeholder="비밀번호" style="padding-right: 40px;">
+                     <span onclick="togglePassword('pass', this)" style="position:absolute; right:10px; top:50%; transform:translateY(-50%); cursor:pointer; color:#bbb; font-size:12px;">보기</span>
+                  </div>
                 </div>
 
                 <div class="mb-3">
-                    <label for="confirmPass" class="form-label visually-hidden">비밀번호 확인</label>
-                    <input type="password" name="confirmPass" class="form-control" placeholder="비밀번호 확인">
+                  <label for="confirmPass" class="form-label visually-hidden">비밀번호 확인</label>
+                  <input type="password" id="confirmPass" name="confirmPass" class="form-control" placeholder="비밀번호 확인">
                 </div>
+
 
                 <div class="mb-3">
                     <label for="email" class="form-label visually-hidden">이메일</label>

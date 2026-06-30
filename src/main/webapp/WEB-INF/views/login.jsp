@@ -4,6 +4,21 @@
 <html>
 <head>
     <meta charset="UTF-8">
+    <script>
+        function togglePassword(inputId, icon) {
+            var input = document.getElementById(inputId);
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.textContent = '숨기기';
+            } else {
+                input.type = 'password';
+                icon.textContent = '보기';
+            }
+        }
+        function checkKorean(input) {
+            input.value = input.value.replace(/[ㄱ-ㅎㅏ-ㅣ가-힣]/g, '');
+        }
+    </script>
     <title>로그인</title>
     <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/bootstrap.min.css">
     <style>
@@ -74,12 +89,17 @@
             <form action="loginProc.do" method="post">
                 <div class="mb-3">
                     <label for="id" class="form-label" style="display: none;">ID</label>
-                    <input type="text" name="id" class="form-control" placeholder="아이디">
+                    <input type="text" name="id" class="form-control" placeholder="아이디" value="${savedId}">
                 </div>
 
                 <div class="mb-3">
                     <label for="pass" class="form-label" style="display: none;">Password</label>
-                    <input type="password" name="pass" class="form-control" placeholder="비밀번호">
+                    <div style="position: relative;">
+                        <input type="password" id="pass" name="pass" class="form-control"
+                               placeholder="비밀번호" style="padding-right: 50px;"
+                               onInput="checkKorean(this)">
+                        <span onclick="togglePassword('pass', this)" style="position:absolute; right:10px; top:50%; transform:translateY(-50%); cursor:pointer; color:#bbb; font-size:12px;">보기</span>
+                    </div>
                 </div>
 
                 <div class="mb-3">
