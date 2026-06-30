@@ -1,6 +1,6 @@
-package com.example.movieProject_v2.repository;
+package com.example.movieProject_v3.repository;
 
-import com.example.movieProject_v2.entity.Like;
+import com.example.movieProject_v3.entity.Like;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

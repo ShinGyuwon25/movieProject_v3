@@ -1,4 +1,4 @@
-package com.example.movieProject_v2;
+package com.example.movieProject_v3;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

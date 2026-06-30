@@ -1,6 +1,6 @@
-package com.example.movieProject_v2.repository;
+package com.example.movieProject_v3.repository;
 
-import com.example.movieProject_v2.entity.Comment;
+import com.example.movieProject_v3.entity.Comment;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

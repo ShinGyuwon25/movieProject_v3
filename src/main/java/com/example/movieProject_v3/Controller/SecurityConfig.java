@@ -1,4 +1,4 @@
-package com.example.movieProject_v2.Controller;
+package com.example.movieProject_v3.Controller;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

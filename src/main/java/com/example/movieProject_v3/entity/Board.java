@@ -1,4 +1,4 @@
-package com.example.movieProject_v2.entity;
+package com.example.movieProject_v3.entity;
 
 import jakarta.persistence.*;
 import lombok.Getter;

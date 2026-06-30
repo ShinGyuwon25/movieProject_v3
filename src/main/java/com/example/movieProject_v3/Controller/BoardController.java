@@ -1,9 +1,9 @@
-package com.example.movieProject_v2.Controller;
+package com.example.movieProject_v3.Controller;
 
-import com.example.movieProject_v2.entity.Board;
-import com.example.movieProject_v2.entity.Comment;
-import com.example.movieProject_v2.entity.Member;
-import com.example.movieProject_v2.service.BoardService;
+import com.example.movieProject_v3.entity.Board;
+import com.example.movieProject_v3.entity.Comment;
+import com.example.movieProject_v3.entity.Member;
+import com.example.movieProject_v3.service.BoardService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;

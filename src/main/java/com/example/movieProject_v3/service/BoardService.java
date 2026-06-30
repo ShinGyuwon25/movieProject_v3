@@ -1,18 +1,17 @@
-package com.example.movieProject_v2.service;
+package com.example.movieProject_v3.service;
 
-import com.example.movieProject_v2.entity.Board;
-import com.example.movieProject_v2.entity.Comment;
-import com.example.movieProject_v2.repository.BoardRepository;
-import com.example.movieProject_v2.repository.CommentRepository;
-import com.example.movieProject_v2.repository.LikeRepository;
+import com.example.movieProject_v3.entity.Board;
+import com.example.movieProject_v3.entity.Comment;
+import com.example.movieProject_v3.repository.BoardRepository;
+import com.example.movieProject_v3.repository.CommentRepository;
+import com.example.movieProject_v3.repository.LikeRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-import com.example.movieProject_v2.entity.Like;
-import com.example.movieProject_v2.repository.LikeRepository;
+import com.example.movieProject_v3.entity.Like;
 
 import java.io.File;
 import java.io.IOException;

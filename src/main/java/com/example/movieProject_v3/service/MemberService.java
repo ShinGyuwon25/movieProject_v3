@@ -1,7 +1,7 @@
-package com.example.movieProject_v2.service;
+package com.example.movieProject_v3.service;
 
-import com.example.movieProject_v2.entity.Member;
-import com.example.movieProject_v2.repository.MemberRepository;
+import com.example.movieProject_v3.entity.Member;
+import com.example.movieProject_v3.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;

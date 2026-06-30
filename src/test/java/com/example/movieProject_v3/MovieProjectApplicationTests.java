@@ -1,7 +1,7 @@
-package com.example.movieProject_v2;
+package com.example.movieProject_v3;
 
-import com.example.movieProject_v2.entity.Member;
-import com.example.movieProject_v2.service.MemberService;
+import com.example.movieProject_v3.entity.Member;
+import com.example.movieProject_v3.service.MemberService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

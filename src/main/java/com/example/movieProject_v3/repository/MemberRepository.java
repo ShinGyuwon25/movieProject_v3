@@ -1,6 +1,6 @@
-package com.example.movieProject_v2.repository;
+package com.example.movieProject_v3.repository;
 
-import com.example.movieProject_v2.entity.Member;
+import com.example.movieProject_v3.entity.Member;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

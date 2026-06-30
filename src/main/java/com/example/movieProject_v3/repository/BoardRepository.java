@@ -1,6 +1,6 @@
-package com.example.movieProject_v2.repository;
+package com.example.movieProject_v3.repository;
 
-import com.example.movieProject_v2.entity.Board;
+import com.example.movieProject_v3.entity.Board;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
