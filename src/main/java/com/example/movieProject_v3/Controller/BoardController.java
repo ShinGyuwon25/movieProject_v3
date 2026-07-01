@@ -69,13 +69,14 @@ public class BoardController {
     @RequestMapping(value = "/insertProcBoard.do", method = RequestMethod.POST)
     public String insertProcBoard(@RequestParam("score") float score, Board bdo,
                                   HttpSession session, HttpServletRequest request,
-                                  @RequestParam("uploadFile") MultipartFile uploadFile) {
+                                  @RequestParam("uploadFile") MultipartFile uploadFile,
+                                  @RequestParam(value = "posterUrl", required = false, defaultValue = "") String posterUrl) {
         Member mymember = (Member) session.getAttribute("log");
         if (mymember == null) return "errorPage";
 
         bdo.setScore(score);
         String realPath = request.getSession().getServletContext().getRealPath("/poster/poster/");
-        boardService.saveBoard(bdo, uploadFile, realPath, mymember.getName(), mymember.getSeq());
+        boardService.saveBoard(bdo, uploadFile, realPath, mymember.getName(), mymember.getSeq(), posterUrl);
         return "redirect:boardList.do";
     }
 
@@ -90,17 +91,17 @@ public class BoardController {
         return "modifyBoard";
     }
 
-    // 6. modifyProcBoard
     @RequestMapping(value = "/modifyProcBoard.do", method = RequestMethod.POST)
     public String modifyProcBoard(@RequestParam("score") float score, Board bdo,
                                   HttpSession session, HttpServletRequest request,
-                                  @RequestParam("uploadFile") MultipartFile uploadFile) {
+                                  @RequestParam("uploadFile") MultipartFile uploadFile,
+                                  @RequestParam(value = "posterUrl", required = false, defaultValue = "") String posterUrl) {
         Member log = (Member) session.getAttribute("log");
         if (log == null) return "errorPage";
 
         bdo.setScore(score);
         String realPath = request.getSession().getServletContext().getRealPath("/poster/poster/");
-        boardService.updateBoard(bdo, uploadFile, realPath);
+        boardService.updateBoard(bdo, uploadFile, realPath, posterUrl);
         return "redirect:/boardView.do?seq=" + bdo.getSeq();
     }
 
@@ -135,24 +136,6 @@ public class BoardController {
             model.addAttribute("searchMessage", "검색 결과가 없습니다.");
         } else {
             model.addAttribute("bList", sList);
-        }
-        return "boardList";
-    }
-
-    // + 장르/국가 필터링
-    @RequestMapping(value = "/filterBoard.do")
-    public String filterBoard(@RequestParam String filterType,
-                              @RequestParam String filterValue, Model model) {
-        List<Board> fList;
-        if (filterType.equals("genre")) {
-            fList = boardService.filterByGenre(filterValue);
-        } else {
-            fList = boardService.filterByCountry(filterValue);
-        }
-        if (fList.isEmpty()) {
-            model.addAttribute("searchMessage", "검색 결과가 없습니다.");
-        } else {
-            model.addAttribute("bList", fList);
         }
         return "boardList";
     }

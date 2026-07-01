@@ -100,9 +100,16 @@
     </div>
 
    <div class="row mb-3">
-    <div class="col-sm-3" style = "margin-right: -15px;">
-        <input type="text" class="form-control" id="mtitle" name="mtitle" placeholder="영화 제목" value="${myboard.mtitle}" >
-    </div>
+       <!-- 영화 검색 버튼 -->
+       <div class="col-sm-3" style="margin-right: -15px;">
+           <button type="button" class="btn form-control"
+                   style="background-color:#f8f9fa; text-align:left; color:#888;"
+                   onclick="openMovieSearch()">🔍 영화 검색</button>
+       </div>
+
+       <div class="col-sm-3" style="margin-right: -15px;">
+           <input type="text" class="form-control" id="mtitle" name="mtitle" placeholder="영화 제목">
+       </div>
 
 
      <div class="col-sm-2" style = "margin-right: -15px;">
@@ -190,13 +197,12 @@
 
 
      <div class="row mb-3">
-    <label for="uploadFile" class="col-sm-2 col-form-label no-star-effect" style="font-size: 17px; margin-right: -90px; margin-top: -2px;">영화 포스터</label>
-    <div class="col-sm-3">
-        <input type="file" name="uploadFile" onchange="checkFileType(this)" class="form-control-file">
-        <div id="posterPreviewContainer" style="display: none;">
-            <img id="posterPreview" src="#" alt="포스터 이미지" style="max-width: 100%; display: block;">
-        </div>
-</div>
+             <div class="col-sm-12">
+                 <label style="font-size: 15px; margin-bottom: 6px; color: #555;">영화 포스터 수동 업로드</label><br>
+                 <input type="file" name="uploadFile" onchange="checkFileType(this)" class="form-control-file">
+                 <input type="hidden" id="posterUrl" name="posterUrl" value="">
+             </div>
+         </div>
 
                 <div class="col-sm-7 d-flex justify-content-end">
                     <input type="submit" class="btn btn-primary" value="수정" style = "width: 60px; background-color: #8A0808; border-color: #8A0808; margin-right : 5px;">
@@ -215,5 +221,138 @@
 <!-- hidden -->
 </div>
     <script src="${pageContext.request.contextPath}/resources/js/bootstrap.bundle.min.js"></script>
+
+<!-- 영화 검색 모달 -->
+<div id="movieModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%;
+     background:rgba(0,0,0,0.5); z-index:9999;">
+    <div style="background:white; width:500px; max-height:600px; margin:100px auto;
+                border-radius:10px; overflow:hidden; display:flex; flex-direction:column;">
+
+        <!-- 모달 헤더 -->
+        <div style="padding:16px 20px; border-bottom:1px solid #eee; display:flex;
+                    justify-content:space-between; align-items:center;">
+            <h5 style="margin:0;">🎬 영화 검색</h5>
+            <button onclick="closeMovieSearch()"
+                    style="border:none; background:none; font-size:20px; cursor:pointer;">✕</button>
+        </div>
+
+        <!-- 검색 입력 -->
+        <div style="padding:16px 20px; border-bottom:1px solid #eee;">
+            <input type="text" id="modalSearchInput" class="form-control"
+                   placeholder="영화 제목을 입력하세요" autocomplete="off">
+        </div>
+
+        <!-- 검색 결과 -->
+        <div id="modalResults" style="overflow-y:auto; flex:1; padding:8px 0;">
+            <p style="text-align:center; color:#aaa; padding:20px;">영화 제목을 입력해주세요</p>
+        </div>
+    </div>
+</div>
+
+
+    <script>
+    var searchTimer;
+
+    function openMovieSearch() {
+        document.getElementById('movieModal').style.display = 'block';
+        setTimeout(function() {
+            document.getElementById('modalSearchInput').focus();
+        }, 100);
+    }
+
+    function closeMovieSearch() {
+        document.getElementById('movieModal').style.display = 'none';
+        document.getElementById('modalSearchInput').value = '';
+        document.getElementById('modalResults').innerHTML =
+            '<p style="text-align:center; color:#aaa; padding:20px;">영화 제목을 입력해주세요</p>';
+    }
+
+    // 모달 바깥 클릭시 닫기
+    document.getElementById('movieModal').addEventListener('click', function(e) {
+        if (e.target === this) closeMovieSearch();
+    });
+
+    document.getElementById('modalSearchInput').addEventListener('input', function() {
+        clearTimeout(searchTimer);
+        var query = this.value.trim();
+
+        if (query.length < 2) {
+            document.getElementById('modalResults').innerHTML =
+                '<p style="text-align:center; color:#aaa; padding:20px;">영화 제목을 입력해주세요</p>';
+            return;
+        }
+
+        searchTimer = setTimeout(function() {
+            document.getElementById('modalResults').innerHTML =
+                '<p style="text-align:center; color:#aaa; padding:20px;">검색 중...</p>';
+
+            fetch('searchMovie.do?query=' + encodeURIComponent(query))
+                .then(response => response.json())
+                .then(movies => {
+                    var resultsDiv = document.getElementById('modalResults');
+                    resultsDiv.innerHTML = '';
+
+                    if (movies.length === 0) {
+                        resultsDiv.innerHTML =
+                            '<p style="text-align:center; color:#aaa; padding:20px;">검색 결과가 없습니다.</p>';
+                        return;
+                    }
+
+                    movies.forEach(function(movie) {
+                        var item = document.createElement('div');
+                        item.style.cssText = 'padding:12px 20px; cursor:pointer; display:flex; align-items:center; gap:12px; border-bottom:1px solid #f5f5f5;';
+                        item.innerHTML =
+                            (movie.poster ? '<img src="' + movie.poster + '" style="width:45px; height:65px; object-fit:cover; border-radius:4px;">' :
+                                           '<div style="width:45px; height:65px; background:#eee; border-radius:4px;"></div>') +
+                            '<div>' +
+                                '<div style="font-weight:500; font-size:15px;">' + movie.title + '</div>' +
+                                '<div style="font-size:12px; color:#888; margin-top:4px;">' +
+                                    movie.year + ' | ' + movie.genre + ' | ' + movie.country +
+                                '</div>' +
+                            '</div>';
+
+                        item.addEventListener('mouseover', function() { this.style.background = '#f8f9fa'; });
+                        item.addEventListener('mouseout', function() { this.style.background = 'white'; });
+
+                        item.addEventListener('click', function() {
+                            document.getElementById('mtitle').value = movie.title;
+
+                            // 연도
+                            var yearSelect = document.getElementById('myear');
+                            for (var i = 0; i < yearSelect.options.length; i++) {
+                                if (yearSelect.options[i].value == movie.year) {
+                                    yearSelect.selectedIndex = i; break;
+                                }
+                            }
+
+                            // 장르
+                            var genreSelect = document.getElementById('mgenre');
+                            for (var i = 0; i < genreSelect.options.length; i++) {
+                                if (genreSelect.options[i].value === movie.genre) {
+                                    genreSelect.selectedIndex = i; break;
+                                }
+                            }
+
+                            // 국가
+                            var countrySelect = document.getElementById('mcountry');
+                            for (var i = 0; i < countrySelect.options.length; i++) {
+                                if (countrySelect.options[i].value === movie.country) {
+                                    countrySelect.selectedIndex = i; break;
+                                }
+                            }
+
+                            // 포스터 URL
+                            document.getElementById('posterUrl').value = movie.poster;
+
+                            closeMovieSearch();
+                        });
+
+                        resultsDiv.appendChild(item);
+                    });
+                })
+                .catch(err => console.error('검색 오류:', err));
+        }, 500);
+    });
+    </script>
 </body>
 </html>

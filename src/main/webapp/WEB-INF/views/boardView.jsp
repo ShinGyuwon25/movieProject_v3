@@ -133,9 +133,14 @@ header {
 			<hr class="my-4">
 			<div class="row">
 				<div class="col-md-3">
-					<img src="<c:url value='/poster/poster/${myboard.filename}'/>"
-						alt="포스터 이미지" class="img-fluid poster-img"
-						style="max-width: 100%; height: auto;">
+					<c:choose>
+                        <c:when test="${fn:startsWith(myboard.filename, 'http')}">
+                            <img src="${myboard.filename}" alt="포스터 이미지" class="img-fluid poster-img">
+                        </c:when>
+                        <c:otherwise>
+                            <img src="<c:url value='/poster/poster/${myboard.filename}'/>" alt="포스터 이미지" class="img-fluid poster-img">
+                        </c:otherwise>
+                    </c:choose>
 				</div>
 				<div class="col-md-8">
 					<h4>${myboard.mtitle}</h4>

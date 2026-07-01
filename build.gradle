@@ -38,6 +38,10 @@ dependencies {
     // Security(BCrypt)
     implementation 'org.springframework.boot:spring-boot-starter-security'
 
+    // HTTP 클라이언트 (외부 API 호출용)
+    implementation 'org.springframework.boot:spring-boot-starter-webflux'
+
+    implementation 'com.fasterxml.jackson.core:jackson-databind'
 
 }
 

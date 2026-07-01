@@ -44,15 +44,19 @@ public class BoardService {
     }
 
     // 게시글 저장
-    public void saveBoard(Board board, MultipartFile uploadFile, String realPath, String memberName, Integer memberSeq) {
+    public void saveBoard(Board board, MultipartFile uploadFile, String realPath, String memberName, Integer memberSeq, String posterUrl) {
         board.setName(memberName);
         board.setMemberSeq(memberSeq);
         board.setTime(new Timestamp(System.currentTimeMillis()));
         board.setContent(board.getContent().replace("\n", "<br>"));
 
         if (!uploadFile.isEmpty()) {
+            // 직접 업로드한 파일 우선
             String savedName = saveFile(uploadFile, realPath);
             board.setFilename(savedName);
+        } else if (!posterUrl.isEmpty()) {
+            // TMDB 포스터 URL 저장
+            board.setFilename(posterUrl);
         } else {
             board.setFilename("empty.jpg");
         }
@@ -60,7 +64,7 @@ public class BoardService {
     }
 
     // 게시글 수정
-    public void updateBoard(Board bdo, MultipartFile uploadFile, String realPath) {
+    public void updateBoard(Board bdo, MultipartFile uploadFile, String realPath, String posterUrl) {
         Board existing = boardRepository.findById(bdo.getSeq()).orElseThrow();
         existing.setTitle(bdo.getTitle());
         existing.setContent(bdo.getContent());
@@ -74,6 +78,8 @@ public class BoardService {
         if (!uploadFile.isEmpty()) {
             String savedName = saveFile(uploadFile, realPath);
             existing.setFilename(savedName);
+        } else if (!posterUrl.isEmpty()) {
+            existing.setFilename(posterUrl); // ← TMDB URL 저장
         }
         boardRepository.save(existing);
     }
