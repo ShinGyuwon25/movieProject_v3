@@ -119,8 +119,7 @@ header {
                             </span>
                         </c:otherwise>
                     </c:choose>
-                    <c:if test="${log != null && log.name eq myboard.name}">
-
+                    <c:if test="${log != null && log.seq == myboard.memberSeq}">
 						<a href="modifyBoard.do?seq=${myboard.seq}"
 							class="btn btn-link text-dark"
 							style="margin-right: -20px; margin-bottom: -20px; text-decoration: none;">수정</a>
@@ -135,21 +134,40 @@ header {
 				<div class="col-md-3">
 					<c:choose>
                         <c:when test="${fn:startsWith(myboard.filename, 'http')}">
-                            <img src="${myboard.filename}" alt="포스터 이미지" class="img-fluid poster-img">
+                            <img src="${myboard.filename}" alt="포스터 이미지" class="img-fluid poster-img"
+                                 onclick="openMovieDetail('${myboard.mtitle}')" style="cursor:pointer;">
                         </c:when>
                         <c:otherwise>
-                            <img src="<c:url value='/poster/poster/${myboard.filename}'/>" alt="포스터 이미지" class="img-fluid poster-img">
+                            <img src="<c:url value='/poster/poster/${myboard.filename}'/>" alt="포스터 이미지"
+                                 class="img-fluid poster-img"
+                                 onclick="openMovieDetail('${myboard.mtitle}')" style="cursor:pointer;">
                         </c:otherwise>
                     </c:choose>
 				</div>
 				<div class="col-md-8">
-					<h4>${myboard.mtitle}</h4>
+					<h4><a href="#" onclick="openMovieDetail('${myboard.mtitle}')"
+                           style="color:inherit; text-decoration:none;">
+                        ${myboard.mtitle} 🎬
+                    </a></h4>
 					<p>${myboard.myear}| ${myboard.mgenre} | ${myboard.mcountry}</p>
 					<p class="star-container">
 						<c:forEach var="i" begin="1" end="5">
 							<span class="star ${myboard.score >= i ? 'checked' : ''}">&#9733;</span>
 						</c:forEach>
 					</p>
+
+					<!-- 평균 별점 추가 -->
+                    <c:if test="${not empty avgScore && not empty myboard.mtitle}">
+                        <p style="font-size:13px; color:#888; margin-top:-8px;">
+                            이 영화 평균 별점:
+                            <c:forEach var="i" begin="1" end="5">
+                                <span style="color:${avgScore >= i ? '#f5a623' : '#ddd'};">★</span>
+                            </c:forEach>
+                            <strong>${String.format('%.1f', avgScore)}점</strong>
+                            <span style="color:#aaa;">(리뷰 ${reviewCount}개)</span>
+                        </p>
+                    </c:if>
+
 					<p>${myboard.content}</p>
 				</div>
 			</div>
@@ -178,7 +196,7 @@ header {
                       <a href="#" class="text-decoration-none me-1 text-dark"
                          onclick="openReplyForm(${mycomment.seq})">답글</a>
                    </c:if>
-                   <c:if test="${log != null && log.name eq mycomment.name}">
+                   <c:if test="${log != null && log.seq == mycomment.memberSeq}">
                       <a href="#" class="text-decoration-none me-1 text-dark"
                          onclick="openModifyForm(${mycomment.seq}, '${mycomment.content}')">수정</a>
                       <a href="deleteComment.do?seq=${mycomment.seq}&boardSeq=${myboard.seq}"
@@ -261,6 +279,27 @@ header {
     </form>
 </div>
 
+<!-- 영화 상세정보 모달 -->
+<div id="movieDetailModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%;
+     background:rgba(0,0,0,0.6); z-index:9999;">
+    <div style="background:white; width:600px; max-height:80vh; margin:60px auto;
+                border-radius:12px; overflow:hidden; display:flex; flex-direction:column;">
+
+        <!-- 헤더 -->
+        <div style="padding:16px 20px; border-bottom:1px solid #eee; display:flex;
+                    justify-content:space-between; align-items:center;">
+            <h5 style="margin:0;">🎬 영화 상세정보</h5>
+            <button onclick="closeMovieDetail()"
+                    style="border:none; background:none; font-size:20px; cursor:pointer;">✕</button>
+        </div>
+
+        <!-- 내용 -->
+        <div id="movieDetailContent" style="overflow-y:auto; flex:1; padding:20px;">
+            <p style="text-align:center; color:#aaa;">불러오는 중...</p>
+        </div>
+    </div>
+</div>
+
 <script src="${pageContext.request.contextPath}/resources/js/bootstrap.bundle.min.js"></script>
 <script>
    function openModifyForm(seq, content) {
@@ -295,6 +334,60 @@ header {
                document.getElementById('likeCount').textContent = count;
            });
    }
+
+   function openMovieDetail(mtitle) {
+       document.getElementById('movieDetailModal').style.display = 'block';
+       document.getElementById('movieDetailContent').innerHTML =
+           '<p style="text-align:center; color:#aaa; padding:20px;">불러오는 중...</p>';
+
+       fetch('movieDetail.do?mtitle=' + encodeURIComponent(mtitle))
+           .then(response => response.json())
+           .then(movie => {
+               if (!movie.title) {
+                   document.getElementById('movieDetailContent').innerHTML =
+                       '<p style="text-align:center; color:#aaa;">정보를 찾을 수 없습니다.</p>';
+                   return;
+               }
+
+               var castStr = movie.cast && movie.cast.length > 0 ? movie.cast.join(', ') : '정보 없음';
+               var runtimeStr = movie.runtime > 0 ? movie.runtime + '분' : '정보 없음';
+
+               document.getElementById('movieDetailContent').innerHTML =
+                   '<div style="display:flex; gap:20px;">' +
+                       '<div style="flex-shrink:0;">' +
+                           '<img src="' + movie.poster + '" style="width:150px; border-radius:8px;" onerror="this.style.display=\'none\'">' +
+                       '</div>' +
+                       '<div style="flex:1;">' +
+                           '<h4 style="margin-bottom:12px;">' + movie.title + '</h4>' +
+                           '<table style="font-size:14px; width:100%;">' +
+                               '<tr><td style="color:#888; width:80px; padding:4px 0;">개봉연도</td><td>' + movie.year + '</td></tr>' +
+                               '<tr><td style="color:#888; padding:4px 0;">장르</td><td>' + movie.genre + '</td></tr>' +
+                               '<tr><td style="color:#888; padding:4px 0;">국가</td><td>' + movie.country + '</td></tr>' +
+                               '<tr><td style="color:#888; padding:4px 0;">상영시간</td><td>' + runtimeStr + '</td></tr>' +
+                               '<tr><td style="color:#888; padding:4px 0;">출연진</td><td>' + castStr + '</td></tr>' +
+                           '</table>' +
+                       '</div>' +
+                   '</div>' +
+                   '<div style="margin-top:16px; padding-top:16px; border-top:1px solid #eee;">' +
+                       '<p style="color:#888; font-size:13px; margin-bottom:6px;">줄거리</p>' +
+                       '<p style="font-size:14px; line-height:1.7;">' + (movie.overview || '줄거리 정보가 없습니다.') + '</p>' +
+                   '</div>';
+           })
+           .catch(err => {
+               document.getElementById('movieDetailContent').innerHTML =
+                   '<p style="text-align:center; color:#aaa;">오류가 발생했습니다.</p>';
+           });
+   }
+
+   function closeMovieDetail() {
+       document.getElementById('movieDetailModal').style.display = 'none';
+   }
+
+   // 모달 바깥 클릭시 닫기
+   window.addEventListener('click', function(e) {
+       if (e.target === document.getElementById('movieDetailModal')) closeMovieDetail();
+   });
 </script>
+
 </body>
 </html>

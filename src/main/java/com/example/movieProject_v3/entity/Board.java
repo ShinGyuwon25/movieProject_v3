@@ -51,4 +51,7 @@ public class Board {
 
     @Column
     private Integer memberSeq;
+
+    @Column(columnDefinition = "integer default 0")
+    private Integer likeCount = 0;
 }

@@ -3,6 +3,7 @@ package com.example.movieProject_v3.repository;
 import com.example.movieProject_v3.entity.Like;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface LikeRepository extends JpaRepository<Like, Integer> {
@@ -12,4 +13,11 @@ public interface LikeRepository extends JpaRepository<Like, Integer> {
 
     // 특정 글의 좋아요 개수
     int countByBoardSeq(Integer boardSeq);
+
+    // 글 삭제 시 좋아요 삭제
+    void deleteByBoardSeq(Integer boardSeq);
+
+    // 내가 좋아요한 글 목록
+    List<Like> findByMemberSeqOrderBySeqDesc(Integer memberSeq);
+
 }

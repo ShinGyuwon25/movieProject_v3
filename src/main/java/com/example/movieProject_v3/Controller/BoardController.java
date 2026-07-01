@@ -41,17 +41,34 @@ public class BoardController {
     // 2. boardView
     @RequestMapping(value = "/boardView.do")
     public String boardView(@RequestParam Integer seq, Model model, HttpSession session) {
-        Board myboard = boardService.getBoardView(seq);
+        Board myboard = boardService.getBoard(seq); // 조회수 증가 없이 먼저 가져옴
+
+        if (myboard == null) return "errorPage";
+
+        // 세션에 이 글 본 기록 없으면 조회수 증가
+        String viewedKey = "viewed_" + seq;
+        if (session.getAttribute(viewedKey) == null) {
+            boardService.incrementViews(seq);
+            session.setAttribute(viewedKey, true);
+        }
+
+        // 조회수 증가 후 다시 가져오기
+        myboard = boardService.getBoard(seq);
+
         List<Comment> cList = boardService.getCommentList(seq);
         model.addAttribute("myboard", myboard);
         model.addAttribute("cList", cList);
         model.addAttribute("authorName", myboard.getName());
         model.addAttribute("likeCount", boardService.getLikeCount(seq));
 
-        Member log = (Member) session.getAttribute("log"); // ← 추가
+        Member log = (Member) session.getAttribute("log");
         if (log != null) {
-            model.addAttribute("isLiked", boardService.isLiked(seq, log.getSeq())); // ← 추가
+            model.addAttribute("isLiked", boardService.isLiked(seq, log.getSeq()));
         }
+
+        // 평균 별점 추가
+        model.addAttribute("avgScore", boardService.getAvgScore(myboard.getMtitle()));
+        model.addAttribute("reviewCount", boardService.getReviewCount(myboard.getMtitle()));
 
         return "boardView";
     }
@@ -77,7 +94,7 @@ public class BoardController {
         bdo.setScore(score);
         String realPath = request.getSession().getServletContext().getRealPath("/poster/poster/");
         boardService.saveBoard(bdo, uploadFile, realPath, mymember.getName(), mymember.getSeq(), posterUrl);
-        return "redirect:boardList.do";
+        return "redirect:boardView.do?seq=" + bdo.getSeq();
     }
 
     // 5. modifyBoard

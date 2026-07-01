@@ -19,4 +19,11 @@ public class TmdbController {
     public List<Map<String, Object>> searchMovie(@RequestParam String query) {
         return tmdbService.searchMovies(query);
     }
+
+    // 영화 상세정보 (팝업용)
+    @RequestMapping(value = "/movieDetail.do")
+    @ResponseBody
+    public Map<String, Object> movieDetail(@RequestParam String mtitle) {
+        return tmdbService.getMovieDetail(mtitle);
+    }
 }

@@ -51,6 +51,7 @@ public class MemberService {
     public String updateMember(Member mdo, String confirmPass, String address, String domain) {
         mdo.setEmail(address + domain);
 
+        if (mdo.getPass() == null || mdo.getPass().isEmpty()) return "비밀번호를 입력해주세요.";
         if (!mdo.getPass().equals(confirmPass)) return "비밀번호가 일치하지 않습니다.";
 
         try {

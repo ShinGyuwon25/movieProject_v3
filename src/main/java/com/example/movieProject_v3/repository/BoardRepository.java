@@ -35,7 +35,17 @@ public interface BoardRepository extends JpaRepository<Board, Integer> {
     // 별점 높은순
     Page<Board> findAllByOrderByScoreDesc(Pageable pageable);
 
+    // 좋아요 높은순
+    Page<Board> findAllByOrderByLikeCountDesc(Pageable pageable);
+
     // 내 글 목록
     List<Board> findByNameOrderBySeqDesc(String name);
 
+    // 같은 영화 제목의 평균 별점
+    @Query("SELECT AVG(b.score) FROM Board b WHERE b.mtitle = :mtitle AND b.score IS NOT NULL")
+    Double findAvgScoreByMtitle(@Param("mtitle") String mtitle);
+
+    // 같은 영화 제목의 리뷰 개수
+    @Query("SELECT COUNT(b) FROM Board b WHERE b.mtitle = :mtitle AND b.score IS NOT NULL")
+    Integer findReviewCountByMtitle(@Param("mtitle") String mtitle);
 }

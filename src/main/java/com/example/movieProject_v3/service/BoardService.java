@@ -36,11 +36,10 @@ public class BoardService {
         return boardRepository.findAll(pageable);
     }
 
-    // 게시글 상세 + 조회수 증가
+    // 조회수 증가
     @Transactional
-    public Board getBoardView(Integer seq) {
+    public void incrementViews(Integer seq) {
         boardRepository.incrementViews(seq);
-        return boardRepository.findById(seq).orElse(null);
     }
 
     // 게시글 저장
@@ -85,8 +84,12 @@ public class BoardService {
     }
 
     // 게시글 삭제
+    @Transactional
     public void deleteBoard(Integer seq) {
+        commentRepository.deleteByBoardSeq(seq);
+        likeRepository.deleteByBoardSeq(seq);
         boardRepository.deleteById(seq);
+
     }
 
     // 게시글 검색
@@ -106,6 +109,8 @@ public class BoardService {
             return boardRepository.findAllByOrderByViewsDesc(pageable);
         } else if (sort.equals("score")) {
             return boardRepository.findAllByOrderByScoreDesc(pageable);
+        } else if (sort.equals("likes")) {
+            return boardRepository.findAllByOrderByLikeCountDesc(pageable);
         } else {
             return boardRepository.findAll(
                     PageRequest.of(page - 1, pageSize, Sort.by(Sort.Direction.DESC, "seq"))
@@ -202,15 +207,21 @@ public class BoardService {
     @Transactional
     public boolean toggleLike(Integer boardSeq, Integer memberSeq) {
         Optional<Like> existing = likeRepository.findByBoardSeqAndMemberSeq(boardSeq, memberSeq);
+        Board board = boardRepository.findById(boardSeq).orElseThrow();
+
         if (existing.isPresent()) {
             likeRepository.delete(existing.get());
-            return false; // 좋아요 취소
+            board.setLikeCount(board.getLikeCount() - 1);
+            boardRepository.save(board);
+            return false;
         } else {
             Like like = new Like();
             like.setBoardSeq(boardSeq);
             like.setMemberSeq(memberSeq);
             likeRepository.save(like);
-            return true; // 좋아요 추가
+            board.setLikeCount(board.getLikeCount() + 1);
+            boardRepository.save(board);
+            return true;
         }
     }
 
@@ -222,5 +233,26 @@ public class BoardService {
     // 내가 좋아요 눌렀는지 확인
     public boolean isLiked(Integer boardSeq, Integer memberSeq) {
         return likeRepository.findByBoardSeqAndMemberSeq(boardSeq, memberSeq).isPresent();
+    }
+
+    // 내가 좋아요한 글 목록
+    public List<Board> getMyLikedBoards(Integer memberSeq) {
+        List<Like> likes = likeRepository.findByMemberSeqOrderBySeqDesc(memberSeq);
+        return likes.stream()
+                .map(like -> boardRepository.findById(like.getBoardSeq()).orElse(null))
+                .filter(board -> board != null)
+                .collect(java.util.stream.Collectors.toList());
+    }
+
+    // 영화 평균 별점
+    public Double getAvgScore(String mtitle) {
+        if (mtitle == null || mtitle.isEmpty()) return null;
+        return boardRepository.findAvgScoreByMtitle(mtitle);
+    }
+
+    // 영화 리뷰 개수
+    public Integer getReviewCount(String mtitle) {
+        if (mtitle == null || mtitle.isEmpty()) return 0;
+        return boardRepository.findReviewCountByMtitle(mtitle);
     }
 }

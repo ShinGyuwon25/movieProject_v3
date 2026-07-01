@@ -121,7 +121,7 @@
 
                 <div class="mb-3 register-form-btns">
                     <input type="submit" value="수정" class="btn btn-primary">
-                    <input type="button" value="취소" onclick="location.href='memberView.do'" class="btn btn-secondary">
+                    <input type="button" value="취소" onclick="location.href='myPage.do'" class="btn btn-secondary">
                 </div>
 
                 <c:if test="${not empty error}">

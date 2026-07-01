@@ -75,6 +75,24 @@ header {
         </div>
     </div>
 
+    <!-- 내가 좋아요한 글 -->
+    <div style="margin-bottom: 40px;">
+        <div class="section-title">👍 좋아요한 글 (${myLikedBoards.size()})</div>
+        <c:choose>
+            <c:when test="${empty myLikedBoards}">
+                <p class="empty-msg">좋아요한 글이 없습니다.</p>
+            </c:when>
+            <c:otherwise>
+                <c:forEach var="board" items="${myLikedBoards}">
+                    <div class="board-item">
+                        <a href="boardView.do?seq=${board.seq}">[${board.mtitle}] ${board.title}</a>
+                        <span style="color:#aaa; font-size:12px; margin-left:8px;">${board.time}</span>
+                    </div>
+                </c:forEach>
+            </c:otherwise>
+        </c:choose>
+    </div>
+
     <!-- 내가 쓴 글 -->
     <div style="margin-bottom: 40px;">
         <div class="section-title">📝 내가 쓴 글 (${myBoards.size()})</div>

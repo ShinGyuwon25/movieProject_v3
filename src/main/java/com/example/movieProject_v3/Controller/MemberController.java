@@ -112,6 +112,7 @@ public class MemberController {
         model.addAttribute("mymember", memberService.getMember(log.getSeq()));
         model.addAttribute("myBoards", boardService.getMyBoards(log.getName()));
         model.addAttribute("myComments", boardService.getMyComments(log.getName()));
+        model.addAttribute("myLikedBoards", boardService.getMyLikedBoards(log.getSeq())); // ← 추가
         return "myPage";
     }
 

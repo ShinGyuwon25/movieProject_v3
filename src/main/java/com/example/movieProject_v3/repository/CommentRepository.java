@@ -15,4 +15,8 @@ public interface CommentRepository extends JpaRepository<Comment, Integer> {
 
     // 답글 목록 조회
     List<Comment> findByParentSeqOrderBySeqAsc(Integer parentSeq);
+
+    // 글 삭제 시 댓글 삭제
+    void deleteByBoardSeq(Integer boardSeq);
+
 }

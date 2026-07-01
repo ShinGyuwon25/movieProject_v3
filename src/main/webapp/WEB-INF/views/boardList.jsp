@@ -129,6 +129,11 @@ function toggleSearchInput(select) {
                   ${currentSort == 'views' ? 'background-color:#8A0808; color:white;' : 'background-color:#eee; color:#333;'}">
             조회순
         </a>
+        <a href="boardList.do?sort=likes"
+           style="margin-right: 6px; text-decoration: none; padding: 4px 12px; border-radius: 4px; font-size: 13px;
+                  ${currentSort == 'likes' ? 'background-color:#8A0808; color:white;' : 'background-color:#eee; color:#333;'}">
+            인기순
+        </a>
         <a href="boardList.do?sort=score"
            style="text-decoration: none; padding: 4px 12px; border-radius: 4px; font-size: 13px;
                   ${currentSort == 'score' ? 'background-color:#8A0808; color:white;' : 'background-color:#eee; color:#333;'}">
