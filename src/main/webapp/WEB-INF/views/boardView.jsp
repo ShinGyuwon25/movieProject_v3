@@ -124,8 +124,9 @@ header {
 							class="btn btn-link text-dark"
 							style="margin-right: -20px; margin-bottom: -20px; text-decoration: none;">수정</a>
 						<a href="deleteBoard.do?seq=${myboard.seq}"
-							class="btn btn-link text-dark"
-							style="text-decoration: none; margin-bottom: -20px;">삭제</a>
+                               class="btn btn-link text-dark"
+                               style="text-decoration: none; margin-bottom: -20px;"
+                               onclick="return confirm('게시글을 삭제하시겠습니까?')">삭제</a>
 					</c:if>
 				</div>
 			</div>
@@ -200,7 +201,8 @@ header {
                       <a href="#" class="text-decoration-none me-1 text-dark"
                          onclick="openModifyForm(${mycomment.seq}, '${mycomment.content}')">수정</a>
                       <a href="deleteComment.do?seq=${mycomment.seq}&boardSeq=${myboard.seq}"
-                         class="text-decoration-none text-dark">삭제</a>
+                         class="text-decoration-none text-dark"
+                         onclick="return confirm('댓글을 삭제하시겠습니까?')">삭제</a>
                    </c:if>
                 </td>
              </tr>
@@ -211,7 +213,8 @@ header {
              <!-- 답글 입력 폼 (해당 댓글용, 평소엔 숨김) -->
              <tr id="replyForm-${mycomment.seq}" style="display:none;">
                 <td colspan="2" style="border-bottom:none; padding-left:30px;">
-                   <form action="insertComment.do" method="post" class="d-flex">
+                   <form id="insertCommentForm" action="insertComment.do" method="post"
+                         class="mt-3" onsubmit="return validateComment()">
                       <input type="hidden" name="boardSeq" value="${myboard.seq}">
                       <input type="hidden" name="parentSeq" value="${mycomment.seq}">
                       <textarea name="content" rows="1" class="form-control" placeholder="답글을 입력하세요"></textarea>
@@ -237,7 +240,8 @@ header {
                             <a href="#" class="text-decoration-none me-1 text-dark"
                                onclick="openModifyForm(${reply.seq}, '${reply.content}')">수정</a>
                             <a href="deleteComment.do?seq=${reply.seq}&boardSeq=${myboard.seq}"
-                               class="text-decoration-none text-dark">삭제</a>
+                               class="text-decoration-none text-dark"
+                               onclick="return confirm('답글을 삭제하시겠습니까?')">삭제</a>
                          </c:if>
                       </td>
                    </tr>
@@ -252,7 +256,7 @@ header {
 
     <!-- 댓글 수정 폼 -->
     <div id="modifyCommentForm" style="display: none;" class="mb-3">
-       <form action="modifyProcComment.do" method="post">
+       <form action="modifyProcComment.do" method="post" onsubmit="return validateModifyComment()">
           <input type="hidden" id="commentSeq" name="seq" value="">
           <input type="hidden" name="boardSeq" value="${myboard.seq}">
           <div class="form-group">
@@ -268,7 +272,7 @@ header {
     </div>
 
     <!-- 등록 폼 -->
-    <form id="insertCommentForm" action="insertComment.do" method="post" class="mt-3">
+    <form action="insertComment.do" method="post" class="d-flex" onsubmit="return validateReply(this)">
        <input type="hidden" name="boardSeq" value="${myboard.seq}">
        <div class="d-flex justify-content-end">
           <textarea name="content" rows="2" cols="50" class="form-control"
@@ -382,6 +386,34 @@ header {
    function closeMovieDetail() {
        document.getElementById('movieDetailModal').style.display = 'none';
    }
+
+   function validateComment() {
+       var content = document.querySelector('#insertCommentForm textarea[name="content"]').value.trim();
+       if (!content) {
+           alert('댓글 내용을 입력해주세요.');
+           return false;
+       }
+       return true;
+   }
+
+   function validateReply(form) {
+       var content = form.querySelector('textarea[name="content"]').value.trim();
+       if (!content) {
+           alert('댓글 내용을 입력해주세요.');
+           return false;
+       }
+       return true;
+   }
+
+   function validateModifyComment() {
+       var content = document.getElementById('content').value.trim();
+       if (!content) {
+           alert('댓글 내용을 입력해주세요.');
+           return false;
+       }
+       return true;
+   }
+
 
    // 모달 바깥 클릭시 닫기
    window.addEventListener('click', function(e) {

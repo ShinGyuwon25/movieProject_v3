@@ -92,8 +92,8 @@
     <div class="jumbotron">
     <h2>글 쓰기</h2>
     <hr>
-    <form name="myform" id="myform" action="insertProcBoard.do" method="post" enctype="multipart/form-data">
-
+    <form name="myform" id="myform" action="insertProcBoard.do" method="post"
+          enctype="multipart/form-data" onsubmit="return validateForm()">
         <div class="row mb-3">
             <div class="col-sm-12">
         <input type="text" class="form-control" id="title" name="title" placeholder="제목">
@@ -263,6 +263,41 @@ function closeMovieSearch() {
     document.getElementById('modalSearchInput').value = '';
     document.getElementById('modalResults').innerHTML =
         '<p style="text-align:center; color:#aaa; padding:20px;">영화 제목을 입력해주세요</p>';
+}
+
+function validateForm() {
+    if (!document.getElementById('title').value.trim()) {
+        alert('제목을 입력해주세요.');
+        document.getElementById('title').focus();
+        return false;
+    }
+    if (!document.getElementById('mtitle').value.trim()) {
+        alert('영화 제목을 입력해주세요.');
+        document.getElementById('mtitle').focus();
+        return false;
+    }
+    if (!document.getElementById('myear').value) {
+        alert('제작 연도를 선택해주세요.');
+        return false;
+    }
+    if (!document.getElementById('mgenre').value) {
+        alert('영화 장르를 선택해주세요.');
+        return false;
+    }
+    if (!document.getElementById('mcountry').value) {
+        alert('제작 국가를 선택해주세요.');
+        return false;
+    }
+    if (!document.querySelector('input[name="score"]:checked')) {
+        alert('별점을 선택해주세요.');
+        return false;
+    }
+    if (!document.getElementById('content').value.trim()) {
+        alert('내용을 입력해주세요.');
+        document.getElementById('content').focus();
+        return false;
+    }
+    return true;
 }
 
 // 모달 바깥 클릭시 닫기

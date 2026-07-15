@@ -160,8 +160,10 @@ function toggleSearchInput(select) {
 				<c:forEach var="myboard" items="${bList}">
 					<tr>
 						<td><a href="boardView.do?seq=${myboard.seq}"
-							class="text-decoration-none"> [${myboard.mtitle}]
-								${myboard.title} </a></td>
+                            class="text-decoration-none"> [${myboard.mtitle}]
+                                ${myboard.title} </a>
+                            <span style="color:#aaa; font-size:12px;">[${myboard.commentCount}]</span>
+                        </td>
 						<td class="text-center">${myboard.name}</td>
 						<td class="text-center"><fmt:formatDate value="${myboard.time}" pattern="HH:mm" /></td>
 						<td class="text-center">${myboard.views}</td>

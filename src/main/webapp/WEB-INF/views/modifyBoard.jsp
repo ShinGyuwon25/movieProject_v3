@@ -108,7 +108,8 @@
        </div>
 
        <div class="col-sm-3" style="margin-right: -15px;">
-           <input type="text" class="form-control" id="mtitle" name="mtitle" placeholder="영화 제목">
+           <input type="text" class="form-control" id="mtitle" name="mtitle"
+           placeholder="영화 제목" value="${myboard.mtitle}">
        </div>
 
 
@@ -191,7 +192,8 @@
             </div>
 <div class="row mb-3">
     <div class="col-sm-12">
-        <textarea class="form-control" id="content" name="content" rows="10" placeholder="내용을 입력하세요.">${myboard.content}</textarea>
+        <textarea class="form-control" id="content" name="content" rows="10"
+                  placeholder="내용을 입력하세요.">${myboard.content}</textarea>
     </div>
 </div>
 
@@ -353,6 +355,12 @@
                 .catch(err => console.error('검색 오류:', err));
         }, 500);
     });
+
+    // 페이지 로드 시 <br> → 줄바꿈 변환
+    window.onload = function() {
+        var textarea = document.getElementById('content');
+        textarea.value = textarea.value.replace(/<br>/gi, '\n');
+    };
     </script>
 </body>
 </html>

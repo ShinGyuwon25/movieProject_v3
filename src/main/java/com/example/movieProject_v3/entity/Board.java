@@ -54,4 +54,7 @@ public class Board {
 
     @Column(columnDefinition = "integer default 0")
     private Integer likeCount = 0;
+
+    @Column(columnDefinition = "integer default 0")
+    private Integer commentCount = 0;
 }

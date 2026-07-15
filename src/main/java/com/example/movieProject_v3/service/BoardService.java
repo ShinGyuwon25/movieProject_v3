@@ -47,7 +47,10 @@ public class BoardService {
         board.setName(memberName);
         board.setMemberSeq(memberSeq);
         board.setTime(new Timestamp(System.currentTimeMillis()));
-        board.setContent(board.getContent().replace("\n", "<br>"));
+        board.setContent(board.getContent()
+                .replace("\r\n", "\n")
+                .replace("\r", "\n")
+                .replace("\n", "<br>"));
 
         if (!uploadFile.isEmpty()) {
             // 직접 업로드한 파일 우선
@@ -66,7 +69,11 @@ public class BoardService {
     public void updateBoard(Board bdo, MultipartFile uploadFile, String realPath, String posterUrl) {
         Board existing = boardRepository.findById(bdo.getSeq()).orElseThrow();
         existing.setTitle(bdo.getTitle());
-        existing.setContent(bdo.getContent());
+        existing.setContent(bdo.getContent()
+                .replace("\r\n", "\n")  // CRLF 정규화
+                .replace("\r", "\n")    // CR 정규화
+                .replace("<br>", "")    // 기존 <br> 제거
+                .replace("\n", "<br>")); // 줄바꿈 → <br>
         existing.setScore(bdo.getScore());
         existing.setTime(new Timestamp(System.currentTimeMillis()));
         existing.setMtitle(bdo.getMtitle());
@@ -139,6 +146,10 @@ public class BoardService {
         comment.setName(memberName);
         comment.setMemberSeq(memberSeq);
         commentRepository.save(comment);
+
+        Board board = boardRepository.findById(comment.getBoardSeq()).orElseThrow();
+        board.setCommentCount(board.getCommentCount() + 1);
+        boardRepository.save(board);
     }
 
     // 댓글 수정
@@ -151,7 +162,13 @@ public class BoardService {
 
     // 댓글 삭제
     public void deleteComment(Integer seq) {
+        Comment comment = commentRepository.findById(seq).orElseThrow();
+        Integer boardSeq = comment.getBoardSeq();
         commentRepository.deleteById(seq);
+
+        Board board = boardRepository.findById(boardSeq).orElseThrow();
+        board.setCommentCount(Math.max(0, board.getCommentCount() - 1));
+        boardRepository.save(board);
     }
 
     // 댓글 조회
