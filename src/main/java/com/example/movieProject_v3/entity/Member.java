@@ -27,4 +27,7 @@ public class Member {
 
     @Column(length = 50)
     private String email;
+
+    @Column(length = 200)
+    private String profileImg;
 }

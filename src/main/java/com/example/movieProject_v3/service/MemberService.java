@@ -48,7 +48,7 @@ public class MemberService {
     }
 
     // 회원정보 수정
-    public String updateMember(Member mdo, String confirmPass, String address, String domain) {
+    public String updateMember(Member mdo, String confirmPass, String address, String domain, String profileImg) {
         mdo.setEmail(address + domain);
 
         if (mdo.getPass() == null || mdo.getPass().isEmpty()) return "비밀번호를 입력해주세요.";
@@ -64,6 +64,11 @@ public class MemberService {
             existing.setName(mdo.getName());
             existing.setPass(passwordEncoder.encode(mdo.getPass()));
             existing.setEmail(mdo.getEmail());
+
+            if (profileImg != null && !profileImg.isEmpty()) {
+                existing.setProfileImg(profileImg);
+            }
+
             memberRepository.save(existing);
             return null; // null이면 성공
         } catch (Exception e) {
@@ -73,8 +78,24 @@ public class MemberService {
     }
 
     // 회원 탈퇴
-    public void deleteMember(Integer seq) {
+    public boolean deleteMember(Integer seq, String pass) {
+        Member member = memberRepository.findById(seq).orElseThrow();
+        if (!passwordEncoder.matches(pass, member.getPass())) {
+            return false; // 비밀번호 불일치
+        }
         memberRepository.deleteById(seq);
+        return true;
     }
 
+    // 프로필 사진 변경
+    public void updateProfileImg(Integer seq, String profileImg) {
+        Member existing = memberRepository.findById(seq).orElseThrow();
+        existing.setProfileImg(profileImg);
+        memberRepository.save(existing);
+    }
+
+    // 프로필 사진 가져오기
+    public String getProfileImgByName(String name) {
+        return memberRepository.findProfileImgByName(name);
+    }
 }

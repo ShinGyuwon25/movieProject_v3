@@ -48,4 +48,7 @@ public interface BoardRepository extends JpaRepository<Board, Integer> {
     // 같은 영화 제목의 리뷰 개수
     @Query("SELECT COUNT(b) FROM Board b WHERE b.mtitle = :mtitle AND b.score IS NOT NULL")
     Integer findReviewCountByMtitle(@Param("mtitle") String mtitle);
+
+    // TOP 3 인기순
+    List<Board> findTop3ByOrderByLikeCountDesc();
 }

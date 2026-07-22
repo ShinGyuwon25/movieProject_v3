@@ -1,391 +1,393 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
-
 <!DOCTYPE html>
-<html>
+<html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <script>
-        function checkFileType(input) {
-            var allowedExt = ['jpg', 'jpeg', 'png', 'gif'];
-            var fileName = input.files[0].name;
-            var ext = fileName.substring(fileName.lastIndexOf('.') + 1).toLowerCase();
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>글 쓰기</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #0D0F14; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; min-height: 100vh; display: flex; flex-direction: column; }
 
-            if (!allowedExt.includes(ext)) {
-                alert('이미지 파일만 업로드 가능합니다 (jpg, jpeg, png, gif)');
-                input.value = '';
-            }
-        }
-    </script>
-    <title>글 쓰기</title>
-    <link rel="stylesheet" href="resources/css/bootstrap.min.css">
-    <link rel="stylesheet" href="resources/css/star.css"/>
-    <style>
-             body {
-            background-color: #E6E6E6;
-        }
+/* HEADER */
+.site-header { background: #0D0F14; border-bottom: 2px solid #C0272D; position: sticky; top: 0; z-index: 100; }
+.header-inner { height: 56px; display: flex; align-items: center; justify-content: space-between; padding: 0 32px; max-width: 1100px; width: 100%; margin: 0 auto; }
+.header-logo { color: white; font-size: 16px; font-weight: 500; text-decoration: none; }
+.header-nav { display: flex; align-items: center; gap: 4px; }
+.user-chip { font-size: 13px; color: rgba(255,255,255,.5); padding: 3px 12px; background: rgba(255,255,255,.06); border-radius: 20px; margin-right: 6px; }
+.nav-link { color: rgba(255,255,255,.45); font-size: 14px; text-decoration: none; padding: 4px 10px; border-radius: 4px; }
+.nav-link:hover { color: rgba(255,255,255,.8); background: rgba(255,255,255,.08); }
+.nav-cta { background: #C0272D; color: white; border: none; padding: 6px 16px; border-radius: 5px; font-size: 14px; cursor: pointer; font-weight: 500; text-decoration: none; }
 
-        /* 헤더 스타일 */
-        header {
-            background-color: #8A0808;
-            border-radius: 10px;
-            padding: 1rem;
-            height: 100px;
-            margin-left : 40px;
-            margin-right : 40px;
-            margin-top : 30px;
-            margin-bottom : 30px;
-        }
+/* MAIN */
+.main-content { flex: 1; padding: 32px; max-width: 1100px; width: 100%; margin: 0 auto; }
 
-        /* 버튼 스타일 */
-        .nav-link {
-            margin-left: 1rem;
-            text-decoration: none;
-            color: #F2F2F2;
-        }
+/* CARD */
+.card { background: #161B27; border-radius: 10px; border: 0.5px solid #252B3B; padding: 32px; }
+.page-title { font-size: 20px; font-weight: 600; color: white; margin-bottom: 28px; padding-bottom: 16px; border-bottom: 0.5px solid #252B3B; }
 
+/* FORM */
+.form-group { margin-bottom: 20px; }
+.form-label { font-size: 13px; color: rgba(255,255,255,.45); margin-bottom: 7px; display: block; }
+.form-input { width: 100%; padding: 11px 14px; background: #0D0F14; border: 0.5px solid #252B3B; border-radius: 6px; font-size: 14px; color: rgba(255,255,255,.8); font-family: inherit; transition: border-color .15s; }
+.form-input:focus { outline: none; border-color: #C0272D; }
+.form-input::placeholder { color: rgba(255,255,255,.2); }
+.form-textarea { width: 100%; padding: 12px 14px; background: #0D0F14; border: 0.5px solid #252B3B; border-radius: 6px; font-size: 14px; color: rgba(255,255,255,.8); font-family: inherit; resize: vertical; min-height: 200px; transition: border-color .15s; }
+.form-textarea:focus { outline: none; border-color: #C0272D; }
+.form-textarea::placeholder { color: rgba(255,255,255,.2); }
+.form-select { padding: 11px 14px; background: #0D0F14; border: 0.5px solid #252B3B; border-radius: 6px; font-size: 14px; color: rgba(255,255,255,.7); font-family: inherit; cursor: pointer; }
+.form-select:focus { outline: none; border-color: #C0272D; }
 
-        .container {
-            margin-top: 20px;
-        }
-        .jumbotron {
-            background-color: #fff;
-            padding: 3rem;
-            border-radius: 10px;
-            margin-left : -45px;
-            margin-right : -45px;
-            margin-bottom : 40px;
-        }
-    </style>
+/* 영화 정보 행 */
+.movie-row { display: grid; grid-template-columns: auto 1fr 120px 140px 140px; gap: 8px; align-items: start; }
+.search-btn { padding: 11px 16px; background: #C0272D; color: white; border: none; border-radius: 6px; font-size: 14px; cursor: pointer; white-space: nowrap; font-weight: 500; }
+.search-btn:hover { background: #A0201E; }
+
+/* 별점 */
+.star-group { display: flex; align-items: center; gap: 6px; }
+.star-container { display: flex; flex-direction: row-reverse; justify-content: flex-end; } /* ← 여기 추가 */
+.star-label { font-size: 14px; color: rgba(255,255,255,.4); margin-right: 4px; }
+.star-input { width: 30px; height: 30px; background: #2A3040; clip-path: polygon(50% 0%,63% 32%,98% 35%,70% 60%,80% 95%,50% 75%,20% 95%,30% 60%,2% 35%,37% 32%); cursor: pointer; transition: background .1s; }
+.star-input.on { background: #F5C842; }
+
+/* 파일 업로드 */
+.upload-area { display: flex; align-items: center; gap: 12px; }
+.upload-label { font-size: 13px; color: rgba(255,255,255,.45); }
+.upload-note { font-size: 12px; color: rgba(255,255,255,.25); }
+
+/* 버튼 행 */
+.btn-row { display: flex; justify-content: flex-end; gap: 8px; margin-top: 28px; padding-top: 20px; border-top: 0.5px solid #252B3B; }
+.btn-confirm { padding: 10px 28px; background: #C0272D; color: white; border: none; border-radius: 6px; font-size: 14px; font-weight: 500; cursor: pointer; }
+.btn-confirm:hover { background: #A0201E; }
+.btn-cancel { padding: 10px 20px; background: #252B3B; color: rgba(255,255,255,.5); border: none; border-radius: 6px; font-size: 14px; cursor: pointer; }
+.btn-cancel:hover { background: #2E3549; }
+
+/* 영화 검색 모달 */
+.modal-bg { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,.7); z-index: 9999; }
+.modal-box { background: #161B27; width: 560px; max-height: 70vh; margin: 80px auto; border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; border: 0.5px solid #252B3B; }
+.modal-head { padding: 16px 20px; border-bottom: 0.5px solid #252B3B; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
+.modal-head h5 { font-size: 15px; color: white; font-weight: 500; }
+.modal-close { background: none; border: none; color: rgba(255,255,255,.5); font-size: 20px; cursor: pointer; }
+.modal-search-wrap { padding: 14px 16px; border-bottom: 0.5px solid #252B3B; flex-shrink: 0; }
+.modal-input { width: 100%; padding: 10px 14px; background: #0D0F14; border: 0.5px solid #252B3B; border-radius: 6px; font-size: 14px; color: rgba(255,255,255,.8); font-family: inherit; }
+.modal-input:focus { outline: none; border-color: #C0272D; }
+.modal-input::placeholder { color: rgba(255,255,255,.25); }
+.modal-results { overflow-y: auto; flex: 1; }
+.modal-item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-bottom: 0.5px solid #1D2335; cursor: pointer; transition: background .1s; }
+.modal-item:hover { background: #1A2030; }
+.modal-item:last-child { border-bottom: none; }
+.modal-poster { width: 40px; height: 56px; border-radius: 3px; background: #252B3B; overflow: hidden; flex-shrink: 0; }
+.modal-poster img { width: 100%; height: 100%; object-fit: cover; }
+.modal-title { font-size: 14px; color: white; font-weight: 500; margin-bottom: 3px; }
+.modal-meta { font-size: 12px; color: rgba(255,255,255,.4); }
+.modal-empty { padding: 24px; text-align: center; font-size: 14px; color: rgba(255,255,255,.3); }
+
+/* FOOTER */
+.site-footer { background: #080A0F; padding: 18px 32px; border-top: 0.5px solid #1D2335; margin-top: auto; }
+.footer-inner { display: flex; justify-content: space-between; align-items: center; max-width: 1100px; margin: 0 auto; }
+.footer-logo { font-size: 13px; color: rgba(255,255,255,.3); font-weight: 500; }
+.footer-links { display: flex; gap: 16px; }
+.footer-links a { font-size: 12px; color: rgba(255,255,255,.2); text-decoration: none; }
+.footer-copy { font-size: 11px; color: rgba(255,255,255,.15); text-align: center; max-width: 1100px; margin: 8px auto 0; }
+</style>
 </head>
-
 <body>
- <!-- 헤더 시작 -->
-    <header>
-        <!-- 상단 네비게이션 바 시작 -->
-        <nav class="navbar">
-            <!-- 메인 글씨 -->
-            <a href="boardList.do" style="text-decoration: none; color: #F2F2F2;">
-                 <h3 style="margin-left: 30px; margin-top: 8px;" onclick="location.href='boardList.do'">영화 게시판 🎬</h3>
-            </a>
-             <!-- 로그아웃, 마이페이지, 게시물 링크 표시 -->
-            <div class="d-flex">
-                <!-- 로그인 상태에 따라 링크 표시 -->
-                <c:choose>
-                    <c:when test="${not empty sessionScope.log}">
-                        <a href="logout.do" class="nav-link" onclick="return confirm('로그아웃 하시겠습니까?')">로그아웃</a>
-                        <a href="myPage.do" class="nav-link">마이페이지</a>
-                        <a href="insertBoard.do" class="nav-link" style="margin-right: 30px;">게시물 작성</a>
-                    </c:when>
-                    <c:otherwise>
-                        <a href="login.do" class="nav-link">로그인</a>
-                        <a href="insertMember.do" class="nav-link" style="margin-right: 30px;">회원가입</a>
-                    </c:otherwise>
-                </c:choose>
-            </div>
+
+<!-- HEADER -->
+<header class="site-header">
+    <div class="header-inner">
+        <a href="boardList.do" class="header-logo">
+            <svg width="110" height="30" viewBox="0 0 110 30" xmlns="http://www.w3.org/2000/svg">
+                <text x="0" y="22" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="22" font-weight="700" fill="white" letter-spacing="-0.5">CINE<tspan fill="#C0272D">LOG</tspan></text>
+            </svg>
+        </a>
+        <nav class="header-nav">
+            <c:choose>
+                <c:when test="${not empty sessionScope.log}">
+                    <span class="user-chip">${sessionScope.log.name}</span>
+                    <a href="logout.do" class="nav-link" onclick="return confirm('로그아웃 하시겠습니까?')">로그아웃</a>
+                    <a href="myPage.do" class="nav-link">마이페이지</a>
+                    <a href="insertBoard.do" class="nav-cta">게시물 작성</a>
+                </c:when>
+                <c:otherwise>
+                    <a href="login.do" class="nav-link">로그인</a>
+                    <a href="insertMember.do" class="nav-cta">회원가입</a>
+                </c:otherwise>
+            </c:choose>
         </nav>
-        <!-- 상단 네비게이션 바 종료 -->
-    </header>
-    <!-- 헤더 종료 -->
-
-     <div class="container">
-    <div class="jumbotron">
-    <h2>글 쓰기</h2>
-    <hr>
-    <form name="myform" id="myform" action="insertProcBoard.do" method="post"
-          enctype="multipart/form-data" onsubmit="return validateForm()">
-        <div class="row mb-3">
-            <div class="col-sm-12">
-        <input type="text" class="form-control" id="title" name="title" placeholder="제목">
     </div>
-    </div>
+</header>
 
-<div class="row mb-3">
-    <!-- 영화 검색 버튼 -->
-    <div class="col-sm-3" style="margin-right: -15px;">
-        <button type="button" class="btn form-control"
-                style="background-color:#f8f9fa; text-align:left; color:#888;"
-                onclick="openMovieSearch()">🔍 영화 검색</button>
-    </div>
+<!-- MAIN -->
+<div class="main-content">
+    <div class="card">
+        <div class="page-title">리뷰 작성</div>
 
-    <div class="col-sm-3" style="margin-right: -15px;">
-        <input type="text" class="form-control" id="mtitle" name="mtitle" placeholder="영화 제목">
-    </div>
+        <form name="myform" id="myform" action="insertProcBoard.do" method="post"
+              enctype="multipart/form-data" onsubmit="return validateForm()">
 
-    <div class="col-sm-2" style = "margin-right: -15px;">
-        <select class="form-control" id="myear" name="myear" >
-            <!-- 제작 연도 드롭다운 리스트-->
-            <option value="" disabled selected>제작 연도</option>
-            <!-- 역순으로 옵션 생성 -->
-            <% for (int year = 2023; year >= 1900; year--) { %>
-                <option value="<%= year %>"><%= year %></option>
-            <% } %>
-        </select>
-    </div>
-<div class="col-sm-2" style="margin-right: -15px;">
-    <select class="form-control" id="mgenre" name="mgenre">
-        <!-- 영화 장르 드롭다운 리스트 -->
-        <option value="" disabled selected>영화 장르</option>
-        <option value="액션">액션</option>
-        <option value="범죄">범죄</option>
-        <option value="SF">SF</option>
-        <option value="코미디">코미디</option>
-        <option value="드라마">드라마</option>
-        <option value="역사">역사</option>
-        <option value="모험">모험</option>
-        <option value="로맨스">로맨스</option>
-        <option value="스릴러">스릴러</option>
-        <option value="공포">공포</option>
-        <option value="전쟁">전쟁</option>
-        <option value="스포츠">스포츠</option>
-        <option value="판타지">판타지</option>
-        <option value="음악">음악</option>
-        <option value="뮤지컬">뮤지컬</option>
-        <option value="멜로">멜로</option>
-    </select>
-</div>
-
-<div class="col-sm-2" style="margin-right: -15px;">
-    <select class="form-control" id="mcountry" name="mcountry">
-        <!-- 제작 국가 드롭다운 리스트 -->
-        <option value="" disabled selected>제작 국가</option>
-        <option value="한국">한국</option>
-        <option value="미국">미국</option>
-        <option value="캐나다">캐나다</option>
-        <option value="중국">중국</option>
-        <option value="일본">일본</option>
-        <option value="영국">영국</option>
-        <option value="프랑스">프랑스</option>
-        <option value="인도">인도</option>
-        <option value="독일">독일</option>
-        <option value="멕시코">멕시코</option>
-        <option value="러시아">러시아</option>
-        <option value="호주">호주</option>
-        <option value="이탈리아">이탈리아</option>
-        <option value="스페인">스페인</option>
-        <option value="브라질">브라질</option>
-        <option value="대만">대만</option>
-        <option value="네덜란드">네덜란드</option>
-        <option value="홍콩">홍콩</option>
-    </select>
-</div>
-
-    <!-- 별점 표시 -->
-    <label for="score" class="col-sm-1 col-form-label no-star-effect" style = "font-size: 17px; margin-right : -35px; margin-left : 10px;">별점</label>
-    <div class="col-sm-3 rating-stars star-container" style = "margin-left : -20px;">
-        <fieldset>
-            <input type="radio" name="score" value="5" id="rate1">
-            <label for="rate1" class="star">★</label>
-            <input type="radio" name="score" value="4" id="rate2">
-            <label for="rate2" class="star">★</label>
-            <input type="radio" name="score" value="3" id="rate3">
-            <label for="rate3" class="star">★</label>
-            <input type="radio" name="score" value="2" id="rate4">
-            <label for="rate4" class="star">★</label>
-            <input type="radio" name="score" value="1" id="rate5">
-            <label for="rate5" class="star">★</label>
-        </fieldset>
-    </div>
-        </div>
-
-        <div class="row mb-3">
-            <div class="col-sm-12">
-                <textarea class="form-control" id="content" name="content" rows="10" placeholder="내용을 입력하세요."></textarea>
+            <!-- 제목 -->
+            <div class="form-group">
+                <label class="form-label">제목</label>
+                <input type="text" id="title" name="title" class="form-input" placeholder="제목을 입력하세요">
             </div>
-        </div>
 
-    <div class="row mb-3">
-        <div class="col-sm-12">
-            <label style="font-size: 15px; margin-bottom: 6px; color: #555;">영화 포스터 수동 업로드</label><br>
-            <input type="file" name="uploadFile" onchange="checkFileType(this)" class="form-control-file">
-            <input type="hidden" id="posterUrl" name="posterUrl" value="">
-        </div>
-    </div>
+            <!-- 영화 정보 -->
+            <div class="form-group">
+                <label class="form-label">영화 정보</label>
+                <div class="movie-row">
+                    <button type="button" class="search-btn" onclick="openMovieSearch()">영화 검색</button>
+                    <input type="text" class="form-input" id="mtitle" name="mtitle" placeholder="영화 제목">
+                    <select id="myear" name="myear" class="form-select">
+                        <option value="">연도</option>
+                        <c:forEach var="year" begin="1950" end="2026" step="1">
+                            <option value="${2026 - (year - 1950)}">${2026 - (year - 1950)}</option>
+                        </c:forEach>
+                    </select>
+                    <select id="mgenre" name="mgenre" class="form-select">
+                        <option value="">장르</option>
+                        <option value="액션">액션</option>
+                        <option value="범죄">범죄</option>
+                        <option value="SF">SF</option>
+                        <option value="드라마">드라마</option>
+                        <option value="코미디">코미디</option>
+                        <option value="로맨스">로맨스</option>
+                        <option value="스릴러">스릴러</option>
+                        <option value="공포">공포</option>
+                        <option value="판타지">판타지</option>
+                        <option value="역사">역사</option>
+                        <option value="모험">모험</option>
+                        <option value="전쟁">전쟁</option>
+                        <option value="음악">음악</option>
+                        <option value="뮤지컬">뮤지컬</option>
+                        <option value="멜로">멜로</option>
+                        <option value="애니메이션">애니메이션</option>
+                    </select>
+                    <select id="mcountry" name="mcountry" class="form-select">
+                        <option value="">국가</option>
+                        <option value="한국">한국</option>
+                        <option value="미국">미국</option>
+                        <option value="일본">일본</option>
+                        <option value="영국">영국</option>
+                        <option value="프랑스">프랑스</option>
+                        <option value="중국">중국</option>
+                        <option value="캐나다">캐나다</option>
+                        <option value="호주">호주</option>
+                        <option value="독일">독일</option>
+                        <option value="이탈리아">이탈리아</option>
+                        <option value="스페인">스페인</option>
+                        <option value="러시아">러시아</option>
+                        <option value="인도">인도</option>
+                        <option value="대만">대만</option>
+                        <option value="홍콩">홍콩</option>
+                    </select>
+                </div>
+            </div>
 
-    <div class="col-sm-7 d-flex justify-content-end">
-        <input type="submit" value="확인" class="btn btn-primary" style = "width: 60px; background-color: #8A0808; border-color: #8A0808; margin-right : 5px;">
-        <input type="button" value="취소" onclick="location.href='boardList.do'" class="btn btn-secondary ml-2" style = "width: 60px; margin-right : -90px;">
-    </div>
-    </div>
+            <!-- 별점 -->
+            <div class="form-group">
+                <label class="form-label">별점</label>
+                <div id="starRating" style="display:flex; gap:4px;">
+                    <div class="star-input" data-value="1"></div>
+                    <div class="star-input" data-value="2"></div>
+                    <div class="star-input" data-value="3"></div>
+                    <div class="star-input" data-value="4"></div>
+                    <div class="star-input" data-value="5"></div>
+                </div>
+                <input type="hidden" id="scoreInput" name="score" value="">
+            </div>
 
-    </form>
-    </div>
+            <!-- 내용 -->
+            <div class="form-group">
+                <label class="form-label">내용</label>
+                <textarea id="content" name="content" class="form-textarea" placeholder="리뷰 내용을 입력하세요"></textarea>
+            </div>
 
-    <!-- 글쓴이 숨기기 -->
-<label for="name" class="col-sm-2 col-form-label no-star-effect visually-hidden">글쓴이</label>
-<div class="col-sm-4">
-    <input type="hidden" class="form-control" id="name" name="name" value="${mymember.name}" readonly>
+            <!-- 포스터 업로드 -->
+            <div class="form-group">
+                <input type="file" name="uploadFile" id="uploadFile" style="display:none;"
+                       onchange="checkFileType(this)">
+                <input type="hidden" id="posterUrl" name="posterUrl" value="">
+                <span onclick="document.getElementById('uploadFile').click()"
+                      style="font-size:12px; color:rgba(255,255,255,.25); cursor:pointer; text-decoration:underline;">
+                    영화 포스터 수동 업로드
+                </span>
+                <span id="fileName" style="font-size:12px; color:rgba(255,255,255,.2); margin-left:8px;">선택된 파일 없음</span>
+            </div>
+
+            <!-- 버튼 -->
+            <div class="btn-row">
+                <button type="button" class="btn-cancel" onclick="location.href='boardList.do'">취소</button>
+                <button type="submit" class="btn-confirm">등록</button>
+            </div>
+        </form>
+    </div>
 </div>
-<!-- hidden -->
-    </div>
-    <script src="${pageContext.request.contextPath}/resources/js/bootstrap.bundle.min.js"></script>
-
 
 <!-- 영화 검색 모달 -->
-<div id="movieModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%;
-     background:rgba(0,0,0,0.5); z-index:9999;">
-    <div style="background:white; width:500px; max-height:600px; margin:100px auto;
-                border-radius:10px; overflow:hidden; display:flex; flex-direction:column;">
-
-        <!-- 모달 헤더 -->
-        <div style="padding:16px 20px; border-bottom:1px solid #eee; display:flex;
-                    justify-content:space-between; align-items:center;">
-            <h5 style="margin:0;">🎬 영화 검색</h5>
-            <button onclick="closeMovieSearch()"
-                    style="border:none; background:none; font-size:20px; cursor:pointer;">✕</button>
+<div id="movieModal" class="modal-bg">
+    <div class="modal-box">
+        <div class="modal-head">
+            <h5>영화 검색</h5>
+            <button class="modal-close" onclick="closeMovieSearch()">&#10005;</button>
         </div>
-
-        <!-- 검색 입력 -->
-        <div style="padding:16px 20px; border-bottom:1px solid #eee;">
-            <input type="text" id="modalSearchInput" class="form-control"
-                   placeholder="영화 제목을 입력하세요" autocomplete="off">
+        <div class="modal-search-wrap">
+            <input type="text" id="modalSearchInput" class="modal-input" placeholder="영화 제목을 입력하세요" autocomplete="off">
         </div>
-
-        <!-- 검색 결과 -->
-        <div id="modalResults" style="overflow-y:auto; flex:1; padding:8px 0;">
-            <p style="text-align:center; color:#aaa; padding:20px;">영화 제목을 입력해주세요</p>
+        <div id="modalResults" class="modal-results">
+            <div class="modal-empty">영화 제목을 입력해주세요</div>
         </div>
     </div>
 </div>
 
+<!-- FOOTER -->
+<footer class="site-footer">
+    <div class="footer-inner">
+        <span class="footer-logo">
+            <svg width="90" height="24" viewBox="0 0 110 30" xmlns="http://www.w3.org/2000/svg">
+                <text x="0" y="22" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="22" font-weight="700" fill="rgba(255,255,255,0.3)" letter-spacing="-0.5">CINE<tspan fill="rgba(192,39,45,0.5)">LOG</tspan></text>
+            </svg>
+        </span>
+        <div class="footer-links">
+            <a href="#">이용약관</a>
+            <a href="#">개인정보처리방침</a>
+            <a href="#">문의</a>
+        </div>
+    </div>
+    <p class="footer-copy">&copy; 2026 영화 게시판. All rights reserved.</p>
+</footer>
+
 <script>
+function checkFileType(input) {
+    var allowedExt = ['jpg', 'jpeg', 'png', 'gif'];
+    var fileName = input.files[0].name;
+    var ext = fileName.substring(fileName.lastIndexOf('.') + 1).toLowerCase();
+    if (!allowedExt.includes(ext)) {
+        alert('이미지 파일만 업로드 가능합니다 (jpg, jpeg, png, gif)');
+        input.value = '';
+    }
+}
+
+function validateForm() {
+    if (!document.getElementById('title').value.trim()) { alert('제목을 입력해주세요.'); document.getElementById('title').focus(); return false; }
+    if (!document.getElementById('mtitle').value.trim()) { alert('영화 제목을 입력해주세요.'); document.getElementById('mtitle').focus(); return false; }
+    if (!document.getElementById('myear').value) { alert('제작 연도를 선택해주세요.'); return false; }
+    if (!document.getElementById('mgenre').value) { alert('영화 장르를 선택해주세요.'); return false; }
+    if (!document.getElementById('mcountry').value) { alert('제작 국가를 선택해주세요.'); return false; }
+    if (!document.getElementById('scoreInput').value) { alert('별점을 선택해주세요.'); return false; }
+    if (!document.getElementById('content').value.trim()) { alert('내용을 입력해주세요.'); document.getElementById('content').focus(); return false; }
+    return true;
+}
+
+// 아이디 실시간 검증
+document.getElementById('id') && document.getElementById('id').addEventListener('blur', function() {
+    var val = this.value;
+    var msg = '';
+    if (val.length < 5) msg = '아이디는 5자 이상이어야 합니다.';
+    else if (!/[a-zA-Z]/.test(val)) msg = '아이디는 영어를 포함해야 합니다.';
+    showFieldError('id', msg);
+});
+
+function showFieldError(fieldId, msg) {
+    var input = document.getElementById(fieldId);
+    var errorDiv = document.getElementById(fieldId + 'Error');
+    if (!input || !errorDiv) return;
+    if (msg) { input.style.borderColor = '#C0272D'; errorDiv.textContent = msg; errorDiv.style.display = 'block'; }
+    else { input.style.borderColor = '#252B3B'; errorDiv.style.display = 'none'; }
+}
+
+// 영화 검색 모달
 var searchTimer;
 
 function openMovieSearch() {
     document.getElementById('movieModal').style.display = 'block';
-    setTimeout(function() {
-        document.getElementById('modalSearchInput').focus();
-    }, 100);
+    setTimeout(function() { document.getElementById('modalSearchInput').focus(); }, 100);
 }
 
 function closeMovieSearch() {
     document.getElementById('movieModal').style.display = 'none';
     document.getElementById('modalSearchInput').value = '';
-    document.getElementById('modalResults').innerHTML =
-        '<p style="text-align:center; color:#aaa; padding:20px;">영화 제목을 입력해주세요</p>';
+    document.getElementById('modalResults').innerHTML = '<div class="modal-empty">영화 제목을 입력해주세요</div>';
 }
 
-function validateForm() {
-    if (!document.getElementById('title').value.trim()) {
-        alert('제목을 입력해주세요.');
-        document.getElementById('title').focus();
-        return false;
+function checkFileType(input) {
+    var allowedExt = ['jpg', 'jpeg', 'png', 'gif'];
+    var fileName = input.files[0].name;
+    var ext = fileName.substring(fileName.lastIndexOf('.') + 1).toLowerCase();
+    if (!allowedExt.includes(ext)) {
+        alert('이미지 파일만 업로드 가능합니다 (jpg, jpeg, png, gif)');
+        input.value = '';
+        document.getElementById('fileName').textContent = '선택된 파일 없음';
+    } else {
+        document.getElementById('fileName').textContent = fileName;
     }
-    if (!document.getElementById('mtitle').value.trim()) {
-        alert('영화 제목을 입력해주세요.');
-        document.getElementById('mtitle').focus();
-        return false;
-    }
-    if (!document.getElementById('myear').value) {
-        alert('제작 연도를 선택해주세요.');
-        return false;
-    }
-    if (!document.getElementById('mgenre').value) {
-        alert('영화 장르를 선택해주세요.');
-        return false;
-    }
-    if (!document.getElementById('mcountry').value) {
-        alert('제작 국가를 선택해주세요.');
-        return false;
-    }
-    if (!document.querySelector('input[name="score"]:checked')) {
-        alert('별점을 선택해주세요.');
-        return false;
-    }
-    if (!document.getElementById('content').value.trim()) {
-        alert('내용을 입력해주세요.');
-        document.getElementById('content').focus();
-        return false;
-    }
-    return true;
 }
 
-// 모달 바깥 클릭시 닫기
-document.getElementById('movieModal').addEventListener('click', function(e) {
-    if (e.target === this) closeMovieSearch();
+window.addEventListener('click', function(e) {
+    if (e.target === document.getElementById('movieModal')) closeMovieSearch();
 });
+
+
 
 document.getElementById('modalSearchInput').addEventListener('input', function() {
     clearTimeout(searchTimer);
     var query = this.value.trim();
-
     if (query.length < 2) {
-        document.getElementById('modalResults').innerHTML =
-            '<p style="text-align:center; color:#aaa; padding:20px;">영화 제목을 입력해주세요</p>';
+        document.getElementById('modalResults').innerHTML = '<div class="modal-empty">영화 제목을 입력해주세요</div>';
         return;
     }
-
+    document.getElementById('modalResults').innerHTML = '<div class="modal-empty">검색 중...</div>';
     searchTimer = setTimeout(function() {
-        document.getElementById('modalResults').innerHTML =
-            '<p style="text-align:center; color:#aaa; padding:20px;">검색 중...</p>';
-
         fetch('searchMovie.do?query=' + encodeURIComponent(query))
             .then(response => response.json())
             .then(movies => {
                 var resultsDiv = document.getElementById('modalResults');
                 resultsDiv.innerHTML = '';
-
-                if (movies.length === 0) {
-                    resultsDiv.innerHTML =
-                        '<p style="text-align:center; color:#aaa; padding:20px;">검색 결과가 없습니다.</p>';
-                    return;
-                }
-
+                if (movies.length === 0) { resultsDiv.innerHTML = '<div class="modal-empty">검색 결과가 없습니다.</div>'; return; }
                 movies.forEach(function(movie) {
                     var item = document.createElement('div');
-                    item.style.cssText = 'padding:12px 20px; cursor:pointer; display:flex; align-items:center; gap:12px; border-bottom:1px solid #f5f5f5;';
+                    item.className = 'modal-item';
                     item.innerHTML =
-                        (movie.poster ? '<img src="' + movie.poster + '" style="width:45px; height:65px; object-fit:cover; border-radius:4px;">' :
-                                       '<div style="width:45px; height:65px; background:#eee; border-radius:4px;"></div>') +
-                        '<div>' +
-                            '<div style="font-weight:500; font-size:15px;">' + movie.title + '</div>' +
-                            '<div style="font-size:12px; color:#888; margin-top:4px;">' +
-                                movie.year + ' | ' + movie.genre + ' | ' + movie.country +
-                            '</div>' +
-                        '</div>';
-
-                    item.addEventListener('mouseover', function() { this.style.background = '#f8f9fa'; });
-                    item.addEventListener('mouseout', function() { this.style.background = 'white'; });
-
+                        '<div class="modal-poster">' + (movie.poster ? '<img src="' + movie.poster + '" alt="">' : '') + '</div>' +
+                        '<div><div class="modal-title">' + movie.title + '</div><div class="modal-meta">' + movie.year + ' · ' + movie.genre + ' · ' + movie.country + '</div></div>';
                     item.addEventListener('click', function() {
                         document.getElementById('mtitle').value = movie.title;
-
-                        // 연도
                         var yearSelect = document.getElementById('myear');
-                        for (var i = 0; i < yearSelect.options.length; i++) {
-                            if (yearSelect.options[i].value == movie.year) {
-                                yearSelect.selectedIndex = i; break;
-                            }
-                        }
-
-                        // 장르
+                        for (var i = 0; i < yearSelect.options.length; i++) { if (yearSelect.options[i].value == movie.year) { yearSelect.selectedIndex = i; break; } }
                         var genreSelect = document.getElementById('mgenre');
-                        for (var i = 0; i < genreSelect.options.length; i++) {
-                            if (genreSelect.options[i].value === movie.genre) {
-                                genreSelect.selectedIndex = i; break;
-                            }
-                        }
-
-                        // 국가
+                        for (var i = 0; i < genreSelect.options.length; i++) { if (genreSelect.options[i].value === movie.genre) { genreSelect.selectedIndex = i; break; } }
                         var countrySelect = document.getElementById('mcountry');
-                        for (var i = 0; i < countrySelect.options.length; i++) {
-                            if (countrySelect.options[i].value === movie.country) {
-                                countrySelect.selectedIndex = i; break;
-                            }
-                        }
-
-                        // 포스터 URL
+                        for (var i = 0; i < countrySelect.options.length; i++) { if (countrySelect.options[i].value === movie.country) { countrySelect.selectedIndex = i; break; } }
                         document.getElementById('posterUrl').value = movie.poster;
-
                         closeMovieSearch();
                     });
-
                     resultsDiv.appendChild(item);
                 });
             })
-            .catch(err => console.error('검색 오류:', err));
+            .catch(() => { document.getElementById('modalResults').innerHTML = '<div class="modal-empty">오류가 발생했습니다.</div>'; });
     }, 500);
 });
+
+var stars = document.querySelectorAll('.star-input');
+var scoreInput = document.getElementById('scoreInput');
+
+stars.forEach(function(star) {
+    star.addEventListener('click', function() {
+        var val = parseInt(this.getAttribute('data-value'));
+        scoreInput.value = val;
+        stars.forEach(function(s, i) { s.classList.toggle('on', i < val); });
+    });
+    star.addEventListener('mouseover', function() {
+        var val = parseInt(this.getAttribute('data-value'));
+        stars.forEach(function(s, i) { s.classList.toggle('on', i < val); });
+    });
+});
+document.getElementById('starRating').addEventListener('mouseleave', function() {
+    var current = parseInt(scoreInput.value) || 0;
+    stars.forEach(function(s, i) { s.classList.toggle('on', i < current); });
+});
+
 </script>
 </body>
 </html>

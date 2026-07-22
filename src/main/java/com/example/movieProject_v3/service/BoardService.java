@@ -272,4 +272,56 @@ public class BoardService {
         if (mtitle == null || mtitle.isEmpty()) return 0;
         return boardRepository.findReviewCountByMtitle(mtitle);
     }
+
+    // TOP 3
+    public List<Board> getTop3() {
+        return boardRepository.findTop3ByOrderByLikeCountDesc();
+    }
+
+    // 여러 게시글 삭제
+    @Transactional
+    public void deleteSelectedBoards(List<Integer> seqs) {
+        for (Integer seq : seqs) {
+            commentRepository.deleteByBoardSeq(seq);
+            likeRepository.deleteByBoardSeq(seq);
+            boardRepository.deleteById(seq);
+        }
+    }
+
+    // 여러 댓글 삭제
+    @Transactional
+    public void deleteSelectedComments(List<Integer> seqs) {
+        for (Integer seq : seqs) {
+            Comment comment = commentRepository.findById(seq).orElse(null);
+            if (comment != null) {
+                Integer boardSeq = comment.getBoardSeq();
+                commentRepository.deleteById(seq);
+                Board board = boardRepository.findById(boardSeq).orElse(null);
+                if (board != null) {
+                    board.setCommentCount(Math.max(0, board.getCommentCount() - 1));
+                    boardRepository.save(board);
+                }
+            }
+        }
+    }
+
+    // 프로필 이미지 저장
+    public String saveProfileImage(MultipartFile file, String realPath) {
+        try {
+            File dir = new File(realPath);
+            if (!dir.exists()) dir.mkdirs();
+
+            String originalFileName = file.getOriginalFilename();
+            String ext = originalFileName.substring(originalFileName.lastIndexOf(".") + 1).toLowerCase();
+            List<String> allowedExt = List.of("jpg", "jpeg", "png", "gif");
+            if (!allowedExt.contains(ext)) return null;
+
+            String savedName = "profile_" + UUID.randomUUID().toString().substring(0, 8) + "." + ext;
+            file.transferTo(new File(realPath + savedName));
+            return savedName;
+        } catch (IOException e) {
+            log.error("프로필 이미지 저장 실패", e);
+            return null;
+        }
+    }
 }

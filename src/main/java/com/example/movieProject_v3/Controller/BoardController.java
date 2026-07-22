@@ -4,6 +4,7 @@ import com.example.movieProject_v3.entity.Board;
 import com.example.movieProject_v3.entity.Comment;
 import com.example.movieProject_v3.entity.Member;
 import com.example.movieProject_v3.service.BoardService;
+import com.example.movieProject_v3.service.MemberService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -18,12 +19,14 @@ import org.springframework.web.multipart.MultipartFile;
 
 
 import java.util.List;
+import java.util.Map;
 
 @Controller
 @RequiredArgsConstructor
 public class BoardController {
 
     private final BoardService boardService;
+    private final MemberService memberService;
 
     // 1. boardList
     @RequestMapping(value = "/boardList.do")
@@ -35,6 +38,20 @@ public class BoardController {
         model.addAttribute("currentPage", page);
         model.addAttribute("totalPages", boardPage.getTotalPages());
         model.addAttribute("currentSort", sort);
+
+        // TOP3 따로 변수로 받기
+        List<Board> top3List = boardService.getTop3();
+        model.addAttribute("top3List", top3List);
+
+        // TOP3 프로필 맵
+        if (top3List != null) {
+            Map<String, String> profileMap = new java.util.HashMap<>();
+            for (Board board : top3List) {
+                profileMap.put(board.getName(), memberService.getProfileImgByName(board.getName()));
+            }
+            model.addAttribute("profileMap", profileMap);
+        }
+
         return "boardList";
     }
 
@@ -69,6 +86,16 @@ public class BoardController {
         // 평균 별점 추가
         model.addAttribute("avgScore", boardService.getAvgScore(myboard.getMtitle()));
         model.addAttribute("reviewCount", boardService.getReviewCount(myboard.getMtitle()));
+
+        // 작성자 + 댓글 프로필 맵
+        model.addAttribute("authorProfileImg", memberService.getProfileImgByName(myboard.getName()));
+        Map<String, String> commentProfileMap = new java.util.HashMap<>();
+        for (Comment comment : cList) {
+            if (comment.getName() != null) {
+                commentProfileMap.put(comment.getName(), memberService.getProfileImgByName(comment.getName()));
+            }
+        }
+        model.addAttribute("commentProfileMap", commentProfileMap);
 
         return "boardView";
     }
@@ -208,5 +235,27 @@ public class BoardController {
         boolean liked = boardService.toggleLike(seq, log.getSeq());
         int count = boardService.getLikeCount(seq);
         return liked + ":" + count; // 예: "true:5"
+    }
+
+    // 마이페이지 - 게시글 일괄 삭제
+    @RequestMapping(value = "/deleteSelectedBoards.do", method = RequestMethod.POST)
+    public String deleteSelectedBoards(
+            @RequestParam(value = "seqs", required = false) List<Integer> seqs,
+            HttpSession session) {
+        Member log = (Member) session.getAttribute("log");
+        if (log == null) return "errorPage";
+        if (seqs != null && !seqs.isEmpty()) boardService.deleteSelectedBoards(seqs);
+        return "redirect:/myPage.do";
+    }
+
+    // 마이페이지 - 댓글 일괄 삭제
+    @RequestMapping(value = "/deleteSelectedComments.do", method = RequestMethod.POST)
+    public String deleteSelectedComments(
+            @RequestParam(value = "seqs", required = false) List<Integer> seqs,
+            HttpSession session) {
+        Member log = (Member) session.getAttribute("log");
+        if (log == null) return "errorPage";
+        if (seqs != null && !seqs.isEmpty()) boardService.deleteSelectedComments(seqs);
+        return "redirect:/myPage.do";
     }
 }

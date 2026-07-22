@@ -17,4 +17,8 @@ public interface MemberRepository extends JpaRepository<Member, Integer> {
     // 아이디로 회원 찾기 (로그인용)
     @Query("SELECT m FROM Member m WHERE m.id = :userId")
     Member findById2(@Param("userId") String userId);
+
+    // 프로필 사진 가져오기
+    @Query("SELECT m.profileImg FROM Member m WHERE m.name = :name")
+    String findProfileImgByName(@Param("name") String name);
 }

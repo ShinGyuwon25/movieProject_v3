@@ -11,6 +11,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 
 @Controller
 @RequiredArgsConstructor
@@ -92,12 +93,12 @@ public class MemberController {
                                    @RequestParam String domain,
                                    @RequestParam Integer seq) {
         mdo.setSeq(seq);
-        String error = memberService.updateMember(mdo, confirmPass, address, domain);
+        String error = memberService.updateMember(mdo, confirmPass, address, domain, null);
         if (error != null) {
             model.addAttribute("error", error);
             model.addAttribute("savedName", mdo.getName());
             model.addAttribute("mymember", memberService.getMember(mdo.getSeq()));
-            return "modifyMember";
+            return "myPage";
         }
         Member updated = memberService.getMember(mdo.getSeq());
         session.setAttribute("log", updated);
@@ -117,12 +118,42 @@ public class MemberController {
     }
 
     // 회원 탈퇴
-    @RequestMapping(value = "/deleteMember.do")
-    public String deleteMember(HttpSession session) {
+    @RequestMapping(value = "/deleteMember.do", method = RequestMethod.POST)
+    public String deleteMember(HttpSession session,
+                               @RequestParam String deletePass,
+                               Model model) {
         Member log = (Member) session.getAttribute("log");
         if (log == null) return "errorPage";
-        memberService.deleteMember(log.getSeq());
+
+        boolean result = memberService.deleteMember(log.getSeq(), deletePass);
+        if (!result) {
+            model.addAttribute("deleteError", "비밀번호가 올바르지 않습니다.");
+            model.addAttribute("mymember", memberService.getMember(log.getSeq()));
+            model.addAttribute("myBoards", boardService.getMyBoards(log.getName()));
+            model.addAttribute("myComments", boardService.getMyComments(log.getName()));
+            model.addAttribute("myLikedBoards", boardService.getMyLikedBoards(log.getSeq()));
+            return "myPage";
+        }
         session.invalidate();
         return "redirect:/boardList.do";
+    }
+
+    // 프로필 사진 변경
+    @RequestMapping(value = "/updateProfile.do", method = RequestMethod.POST)
+    public String updateProfile(HttpSession session, HttpServletRequest request,
+                                @RequestParam("profileFile") MultipartFile profileFile) {
+        Member log = (Member) session.getAttribute("log");
+        if (log == null) return "errorPage";
+
+        if (!profileFile.isEmpty()) {
+            String realPath = request.getSession().getServletContext().getRealPath("/profile/");
+            String profileImg = boardService.saveProfileImage(profileFile, realPath);
+            if (profileImg != null) {
+                memberService.updateProfileImg(log.getSeq(), profileImg);
+                Member updated = memberService.getMember(log.getSeq());
+                session.setAttribute("log", updated);
+            }
+        }
+        return "redirect:/myPage.do";
     }
 }
